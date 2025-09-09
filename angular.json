@@ -5,7 +5,17 @@
   "projects": {
     "gestion-tache": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+        "schematics": {
+          "@schematics/angular:component": {
+            "skipTests": true,
+            "inlineStyle": true
+          },
+          "@schematics/angular:service": {
+            "skipTests": true
+          }
+        }
+      },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -97,5 +107,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "3922c65a-2d2b-4419-9c85-acfb5b6b8960"
   }
 }

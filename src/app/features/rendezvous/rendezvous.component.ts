@@ -1,0 +1,466 @@
+// src/app/features/rendezvous/rendezvous.component.ts
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MainLayoutComponent } from '../../core/layouts/main-layout/main-layout.component';
+import { NewRendezVousModalComponent } from '../../shared/components/rendezvous/new-rendezvous-modal/new-rendezvous-modal.component';
+import { RendezVousDetailsModalComponent } from '../../shared/components/rendezvous/rendezvous-details-modal/rendezvous-details-modal.component';
+import { RendezVousService } from '../../core/services/rendezvous/rendezvous.service';
+import { RendezVous, CreateRendezVousDto } from '../../core/interfaces/rendezvous.interface';
+
+@Component({
+  selector: 'app-rendezvous',
+  standalone: true,
+  imports: [
+    CommonModule, 
+    FormsModule,
+    MainLayoutComponent, 
+    NewRendezVousModalComponent,
+    RendezVousDetailsModalComponent,
+  ],
+  styleUrls: ['./rendezvous.component.css'],
+  template: `
+    <app-main-layout [pageTitle]="'Rendez-vous'">
+      <div class="w-full mx-auto">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="text-2xl font-bold text-gray-900">Rendez-vous</h1>
+          <button
+            (click)="openNewRendezVousModal()"
+            class="inline-flex items-center px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Nouveau rendez-vous
+          </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white shadow-sm p-4 rounded-t-lg">
+          <div class="flex items-center justify-between space-x-4">
+            <div class="flex items-center space-x-2 w-full">
+              <div class="w-1/4">
+                <input 
+                  type="text" 
+                  [(ngModel)]="searchQuery"
+                  (ngModelChange)="onSearch()"
+                  placeholder="Rechercher un rendez-vous..."
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+              <div class="flex items-center space-x-2">
+                <select 
+                  [(ngModel)]="statusFilter"
+                  (ngModelChange)="applyFilters()"
+                  class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="">Statut</option>
+                  <option value="planifie">Planifié</option>
+                  <option value="confirme">Confirmé</option>
+                  <option value="annule">Annulé</option>
+                  <option value="termine">Terminé</option>
+                </select>
+                <button 
+                  (click)="clearFilters()"
+                  class="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                  Filtrer
+                </button>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <button 
+                [class]="currentView === 'list' ? 'bg-yellow-100 text-yellow-800' : 'bg-white text-gray-600'"
+                (click)="switchView('list')"
+                class="p-2 rounded-md hover:bg-gray-50">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                </svg>
+              </button>
+              <button 
+                [class]="currentView === 'calendar' ? 'bg-yellow-100 text-yellow-800' : 'bg-white text-gray-600'"
+                (click)="switchView('calendar')"
+                class="p-2 rounded-md hover:bg-gray-50">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendar View -->
+        <div *ngIf="currentView === 'calendar'" class="bg-white shadow-sm  rounded-b-lg">
+          <!-- Calendar Header -->
+          <div class="flex items-center justify-between p-4">
+            <div class="flex items-center space-x-2">
+              <button 
+                (click)="previousMonth()"
+                class="p-2 text-[#4F55FB] hover:bg-gray-100 rounded-md">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path>
+                </svg>
+              </button>
+              <h2 class="text-xl font-semibold text-[#003861]">{{getCurrentMonthYear()}}</h2>
+              <button 
+                (click)="nextMonth()"
+                class="p-2 text-[#4F55FB] hover:bg-gray-100 rounded-md">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="flex items-center">
+              <button 
+                [class]="calendarView === 'day' ? 'bg-[#D4B036] text-white' : 'bg-white text-[#003861]'"
+                (click)="calendarView = 'day'"
+                class="px-3 py-1 text-sm font-semibold rounded-md hover:bg-gray-50">
+                Jour
+              </button>
+              <button 
+                [class]="calendarView === 'week' ? 'bg-[#D4B036] text-white' : 'bg-white text-[#003861]'"
+                (click)="calendarView = 'week'"
+                class="px-3 py-1 text-sm font-semibold rounded-md hover:bg-gray-50">
+                Semaine
+              </button>
+              <button 
+                [class]="calendarView === 'month' ? 'bg-[#D4B036] text-white' : 'bg-white text-[#003861]'"
+                (click)="calendarView = 'month'"
+                class="px-3 py-1 text-sm font-semibold rounded-md hover:bg-gray-50">
+                Mois
+              </button>
+            </div>
+          </div>
+
+          <!-- Calendar Grid -->
+          <div class="p-4">
+            <!-- Days of week header -->
+            <div class="grid grid-cols-7">
+              <div *ngFor="let day of daysOfWeek" class="p-2 text-center text-sm font-medium text-gray-500 border border-gray-200 uppercase">
+                {{day}}
+              </div>
+            </div>
+
+            <!-- Calendar days -->
+            <div class="grid grid-cols-7">
+              <div 
+                *ngFor="let day of calendarDays" 
+                class="min-h-[120px] p-2 border border-gray-200"
+                [class.bg-gray-50]="!day.isCurrentMonth"
+                [class.bg-blue-100]="day.isToday && day.isCurrentMonth"
+                [class.border-blue-300]="day.isToday && day.isCurrentMonth">
+                
+                <div class="flex items-center justify-between">
+                  <span 
+                    class="text-sm font-medium  mb-2 rounded-full w-6 h-6 rounded-full flex items-center justify-center"
+                    [class.text-gray-400]="!day.isCurrentMonth"
+                    [class.text-white]="day.isToday && day.isCurrentMonth"
+                    [class.bg-blue-600]="day.isToday && day.isCurrentMonth"
+                    [class.text-gray-900]="day.isCurrentMonth && !day.isToday">
+                    {{day.date.getDate()}}
+                  </span>
+                </div>
+
+                <!-- Events for this day -->
+                <div class="space-y-1">
+                  <div 
+                    *ngFor="let rdv of getRendezVousForDay(day.date)" 
+                    (click)="openDetailsModal(rdv)"
+                    class="px-2 py-1 text-xs rounded cursor-pointer truncate"
+                    [class]="getEventClass(rdv)">
+                    <div class="font-medium">{{rdv.heure}}</div>
+                    <div class="truncate font-semibold text-md">{{rdv.motif}}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- List View -->
+        <div *ngIf="currentView === 'list'" class="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Heure</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motif</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let rdv of filteredRendezVous" class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">{{getFormattedDate(rdv.date)}}</div>
+                    <div class="text-sm text-gray-500">{{rdv.heure}} ({{rdv.duree}}min)</div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="text-sm text-gray-900 font-medium">{{rdv.motif}}</div>
+                    <div *ngIf="rdv.dossierNumero" class="text-sm text-gray-500">{{rdv.dossierNumero}}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{rdv.clientName}}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span [class]="getTypeClass(rdv.type)">{{getTypeLabel(rdv.type)}}</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span [class]="getStatusClass(rdv.statut)">{{getStatusLabel(rdv.statut)}}</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button 
+                      (click)="openDetailsModal(rdv)"
+                      class="text-blue-600 hover:text-blue-900 mr-4">
+                      Voir
+                    </button>
+                    <button 
+                      (click)="editRendezVous(rdv)"
+                      class="text-yellow-600 hover:text-yellow-900">
+                      Modifier
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="filteredRendezVous.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun rendez-vous</h3>
+          <p class="mt-1 text-sm text-gray-500">Commencez par créer un nouveau rendez-vous.</p>
+          <div class="mt-6">
+            <button 
+              (click)="openNewRendezVousModal()"
+              class="inline-flex items-center px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded-md hover:bg-yellow-700">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              Nouveau rendez-vous
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modals -->
+      <app-new-rendezvous-modal
+        [isOpen]="showNewModal"
+        (close)="closeNewModal()"
+        (save)="createRendezVous($event)">
+      </app-new-rendezvous-modal>
+
+      <app-rendezvous-details-modal
+        [isOpen]="showDetailsModal"
+        [rendezVous]="selectedRendezVous"
+        (close)="closeDetailsModal()"
+        (modify)="editRendezVous($event)"
+        (cancel)="cancelRendezVous($event)">
+      </app-rendezvous-details-modal>
+    </app-main-layout>
+  `
+})
+export class RendezvousComponent implements OnInit {
+  rendezVous: RendezVous[] = [];
+  filteredRendezVous: RendezVous[] = [];
+  
+  // UI State
+  currentView: 'calendar' | 'list' = 'calendar';
+  calendarView: 'month' | 'week' | 'day' = 'month';
+  showNewModal = false;
+  showDetailsModal = false;
+  selectedRendezVous: RendezVous | null = null;
+  
+  // Filters
+  searchQuery = '';
+  statusFilter = '';
+  
+  // Calendar
+  currentDate = new Date();
+  calendarDays: any[] = [];
+  daysOfWeek = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
+
+  constructor(private rendezVousService: RendezVousService) {}
+
+  ngOnInit() {
+    this.loadRendezVous();
+    this.generateCalendar();
+  }
+
+  loadRendezVous() {
+    this.rendezVousService.getRendezVous().subscribe(rendezVous => {
+      this.rendezVous = rendezVous;
+      this.applyFilters();
+    });
+  }
+
+  // Modal Methods
+  openNewRendezVousModal() {
+    this.showNewModal = true;
+  }
+
+  closeNewModal() {
+    this.showNewModal = false;
+  }
+
+  openDetailsModal(rendezVous: RendezVous) {
+    this.selectedRendezVous = rendezVous;
+    this.showDetailsModal = true;
+  }
+
+  closeDetailsModal() {
+    this.showDetailsModal = false;
+    this.selectedRendezVous = null;
+  }
+
+  // CRUD Operations
+  createRendezVous(rendezVousData: CreateRendezVousDto) {
+    this.rendezVousService.createRendezVous(rendezVousData).subscribe(() => {
+      this.loadRendezVous();
+    });
+  }
+
+  editRendezVous(rendezVous: RendezVous) {
+    console.log('Edit rendez-vous:', rendezVous);
+    // Implement edit functionality
+  }
+
+  cancelRendezVous(id: string) {
+    this.rendezVousService.updateRendezVous(id, { statut: 'annule' }).subscribe(() => {
+      this.loadRendezVous();
+    });
+  }
+
+  // Filter Methods
+  onSearch() {
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    this.filteredRendezVous = this.rendezVous.filter(rdv => {
+      const matchesSearch = !this.searchQuery || 
+        rdv.motif.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        rdv.clientName.toLowerCase().includes(this.searchQuery.toLowerCase());
+      
+      const matchesStatus = !this.statusFilter || rdv.statut === this.statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    });
+  }
+
+  clearFilters() {
+    this.searchQuery = '';
+    this.statusFilter = '';
+    this.applyFilters();
+  }
+
+  switchView(view: 'calendar' | 'list') {
+    this.currentView = view;
+  }
+
+  // Calendar Methods
+  generateCalendar() {
+    const year = this.currentDate.getFullYear();
+    const month = this.currentDate.getMonth();
+    
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    
+    this.calendarDays = [];
+    const currentDate = new Date(startDate);
+    
+    for (let i = 0; i < 42; i++) {
+      const today = new Date();
+      this.calendarDays.push({
+        date: new Date(currentDate),
+        isCurrentMonth: currentDate.getMonth() === month,
+        isToday: currentDate.toDateString() === today.toDateString()
+      });
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+  }
+
+  getCurrentMonthYear(): string {
+    return this.currentDate.toLocaleString('default', { month: 'long' }) + ' ' + this.currentDate.getFullYear();
+  }
+
+  previousMonth() {
+    this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+    this.generateCalendar();
+  }
+
+  nextMonth() {
+    this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+    this.generateCalendar();
+  }
+
+  getRendezVousForDay(date: Date): RendezVous[] {
+    return this.filteredRendezVous.filter(rdv => {
+      const rdvDate = new Date(rdv.date);
+      return rdvDate.toDateString() === date.toDateString();
+    });
+  }
+  
+  getEventClass(rdv: RendezVous): string {
+    switch (rdv.type) {
+      case 'physique': return 'bg-green-100 text-green-800 border-l-4 border-green-600';
+      case 'telephonique': return 'bg-blue-100 text-blue-800 border-l-4 border-blue-600';
+      case 'visioconference': return 'bg-purple-100 text-purple-800 border-l-4 border-purple-600';
+      default: return '';
+    }
+  } 
+  getTypeLabel(type: string): string {
+    switch (type) {
+      case 'physique': return 'Physique';
+      case 'telephonique': return 'Téléphonique';
+      case 'visioconference': return 'Visioconférence';
+      default: return '';
+    }
+  }
+
+  getTypeClass(type: string): string {
+    switch (type) {
+      case 'physique': return 'px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded';
+      case 'telephonique': return 'px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded';
+      case 'visioconference': return 'px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded';
+      default: return '';
+    }
+  }
+  
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'planifie': return 'Planifié';
+      case 'confirme': return 'Confirmé';
+      case 'annule': return 'Annulé';
+      case 'reporte': return 'Reporté';
+      case 'termine': return 'Terminé';
+      default: return '';
+    }
+  }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'planifie': return 'px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded';
+      case 'confirme': return 'px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded';
+      case 'annule': return 'px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded';
+      case 'reporte': return 'px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded';
+      case 'termine': return 'px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded';
+      default: return '';
+    }
+  }
+
+  getFormattedDate(date: string | Date): string {
+    const d = new Date(date);
+    // Format: dd/mm/yyyy
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+}

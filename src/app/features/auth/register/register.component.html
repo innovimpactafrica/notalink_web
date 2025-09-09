@@ -1,0 +1,269 @@
+<div class="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 relative overflow-hidden flex items-center justify-center">
+  <!-- Cercles décoratifs -->
+  <div class="absolute top-32 right-1/3 w-32 h-32 bg-gradient-to-br from-[#D4B036] to-[#D4B036] rounded-full opacity-90 blur-xl xl:block hidden"></div>
+  <div class="absolute bottom-32 left-1/3 w-32 h-32 bg-gradient-to-br from-[#1C3055] to-[#1C3055] rounded-full opacity-90 blur-lg xl:block hidden"></div>
+
+  <!-- Formulaire d'inscription -->
+  <div class="bg-[#252B37] backdrop-blur-sm rounded-2xl p-8 w-full max-w-md mx-4 shadow-2xl border border-slate-700/50">
+    <!-- Logo -->
+    <div class="flex justify-center mb-6">
+      <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+        <div class="text-[#D4B036] font-bold text-xl">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#D4B036"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Titre -->
+    <h1 class="text-white text-2xl font-semibold text-center mb-2">Créer un compte</h1>
+    <p class="text-slate-400 text-center mb-8">Créez votre compte pour accéder à nos services notariaux</p>
+
+    <!-- Étape 1: Informations personnelles -->
+    <div *ngIf="currentStep === 1">
+      <form [formGroup]="registerForm" (ngSubmit)="onContinue()">
+        <!-- Prénom et Nom -->
+        <div class="flex gap-4 mb-4">
+          <div class="flex-1">
+            <label class="block text-slate-300 text-sm font-medium mb-2">
+              Prénom <span class="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="firstName"
+              placeholder="Ex: Oulimata"
+              class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#D4B036] focus:border-transparent transition-all"
+            />
+            <div *ngIf="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched" 
+                 class="text-red-400 text-sm mt-1">
+              <span *ngIf="registerForm.get('firstName')?.errors?.['required']">Le prénom est requis</span>
+            </div>
+          </div>
+          
+          <div class="flex-1">
+            <label class="block text-slate-300 text-sm font-medium mb-2">
+              Nom <span class="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="lastName"
+              placeholder="Ex: Sene"
+              class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#D4B036] focus:border-transparent transition-all"
+            />
+            <div *ngIf="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched" 
+                 class="text-red-400 text-sm mt-1">
+              <span *ngIf="registerForm.get('lastName')?.errors?.['required']">Le nom est requis</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cabinet/Etude -->
+        <div class="mb-4">
+          <label class="block text-slate-300 text-sm font-medium mb-2">
+            Cabinet/Etude
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+              </svg>
+            </div>
+            <input
+              type="text"
+              formControlName="cabinet"
+              placeholder="Ex: Cabinet Notaire X"
+              class="w-full pl-10 px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#D4B036] focus:border-transparent transition-all"
+            />
+          </div>
+        </div>
+
+        <!-- Email professionnel et Téléphone -->
+        <div class="flex gap-4 mb-6">
+          <div class="flex-1">
+            <label class="block text-slate-300 text-sm font-medium mb-2">
+              Email professionnel
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
+                </svg>
+              </div>
+              <input
+                type="email"
+                formControlName="email"
+                placeholder="votre@email.com"
+                class="w-full pl-10 px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#D4B036] focus:border-transparent transition-all"
+              />
+            </div>
+            <div *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" 
+                 class="text-red-400 text-sm mt-1">
+              <span *ngIf="registerForm.get('email')?.errors?.['email']">Format d'email invalide</span>
+            </div>
+          </div>
+          
+          <div class="flex-1">
+            <label class="block text-slate-300 text-sm font-medium mb-2">
+              Numéro de téléphone <span class="text-red-400">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                </svg>
+              </div>
+              <input
+                type="tel"
+                formControlName="phone"
+                placeholder="77 123 45 67"
+                class="w-full pl-10 px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#D4B036] focus:border-transparent transition-all"
+              />
+            </div>
+            <div *ngIf="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched" 
+                 class="text-red-400 text-sm mt-1">
+              <span *ngIf="registerForm.get('phone')?.errors?.['required']">Le téléphone est requis</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bouton Continuer -->
+        <button
+          type="submit"
+          [disabled]="!registerForm.valid"
+          class="w-full bg-gradient-to-r from-[#D4B036] to-yellow-600 text-white py-3 px-4 rounded-lg font-medium hover:from-yellow-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-[#D4B036] focus:ring-offset-2 focus:ring-offset-slate-800 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Continuer
+        </button>
+      </form>
+    </div>
+
+    <!-- Étape 2: Document de l'ordre -->
+    <div *ngIf="currentStep === 2">
+      <form [formGroup]="documentForm" (ngSubmit)="onSubmit()">
+        <!-- Numéro d'inscription à l'Ordre -->
+        <div class="mb-6">
+          <label class="block text-slate-300 text-sm font-medium mb-2">
+            Numéro d'inscription à l'Ordre
+          </label>
+          <input
+            type="text"
+            formControlName="orderNumber"
+            placeholder="Ex: Cabinet Notaire X"
+            class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#D4B036] focus:border-transparent transition-all"
+          />
+          <div *ngIf="documentForm.get('orderNumber')?.invalid && documentForm.get('orderNumber')?.touched" 
+               class="text-red-400 text-sm mt-1">
+            <span *ngIf="documentForm.get('orderNumber')?.errors?.['required']">Le numéro d'inscription est requis</span>
+          </div>
+        </div>
+
+        <!-- Document de l'ordre -->
+        <div class="mb-8">
+          <div class="flex items-center mb-3">
+            <div class="w-8 h-8 bg-[#D4B036] rounded-lg flex items-center justify-center mr-3">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-white font-medium">Document de l'ordre</h3>
+              <p class="text-slate-400 text-sm">Document justificatif prouvant votre appartenance</p>
+            </div>
+          </div>
+
+          <!-- Zone de drop pour fichier -->
+          <div class="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center">
+            <input
+              type="file"
+              #fileInput
+              (change)="onFileSelected($event)"
+              accept=".png,.jpg,.jpeg,.pdf"
+              class="hidden"
+            />
+            
+            <div *ngIf="!selectedFile" class="cursor-pointer" (click)="fileInput.click()">
+              <div class="w-12 h-12 mx-auto mb-4 text-slate-400">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 48 48">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"></path>
+                </svg>
+              </div>
+              <button
+                type="button"
+                class="bg-[#D4B036] text-white px-6 py-2 rounded-lg font-medium hover:bg-yellow-600 transition-colors mb-2"
+              >
+                Choisir un fichier
+              </button>
+              <p class="text-slate-400 text-sm">ou glisser-déposer</p>
+              <p class="text-slate-500 text-xs mt-2">PNG, JPG, PDF jusqu'à 10MB</p>
+            </div>
+
+            <div *ngIf="selectedFile" class="flex items-center justify-between bg-slate-700/50 rounded-lg p-3">
+              <div class="flex items-center">
+                <svg class="w-8 h-8 text-[#D4B036] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <div>
+                  <p class="text-white text-sm font-medium">{{ selectedFile.name }}</p>
+                  <p class="text-slate-400 text-xs">{{ formatFileSize(selectedFile.size) }}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                (click)="removeFile()"
+                class="text-red-400 hover:text-red-300 transition-colors"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Boutons navigation -->
+        <div class="flex gap-4">
+          <button
+            type="button"
+            (click)="goBack()"
+            class="flex items-center px-4 py-3 text-[#D4B036] hover:text-yellow-400 font-medium transition-colors"
+          >
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Retour
+          </button>
+
+          <button
+            type="submit"
+            [disabled]="!documentForm.valid"
+            class="flex-1 bg-gradient-to-r from-[#D4B036] to-yellow-600 text-white py-3 px-4 rounded-lg font-medium hover:from-yellow-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-[#D4B036] focus:ring-offset-2 focus:ring-offset-slate-800 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Terminer l'inscription
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Se connecter -->
+    <div class="text-center mt-6">
+      <span class="text-slate-400">Vous avez déjà un compte?</span>
+      <button
+        (click)="navigateToLogin()"
+        class="text-[#D4B036] hover:text-yellow-400 font-medium ml-1 transition-colors"
+      >
+        Se connecter
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de notification -->
+  <app-notification-modal
+    [isVisible]="isModalVisible"
+    [status]="modalStatus"
+    [title]="modalTitle"
+    [description]="modalDescription"
+    [showCloseButton]="true"
+    (closed)="onModalClosed()"
+  />
+</div>
