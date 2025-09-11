@@ -78,85 +78,89 @@ import { map } from 'rxjs/operators';
               <div *ngFor="let document of documents" 
                    class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-150">
                 
-                <div class="flex items-center space-x-4">
-                  <!-- Status Icon -->
-                  <div class="flex-shrink-0">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center"
-                         [ngClass]="getStatusIconClasses(document.status)">
-                      <svg *ngIf="document.status === 'a-valider'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                      </svg>
-                      <svg *ngIf="document.status === 'en-attente'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
-                      </svg>
-                      <svg *ngIf="document.status === 'valides'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                      </svg>
-                      <svg *ngIf="document.status === 'a-signer'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-                      </svg>
+                <div class="flex flex-col justify-between gap-4 w-full">
+                  <div class="flex justify-between"> 
+                    <!-- Document Info -->
+                    <div class="flex-1 flex items-center gap-4">
+                      <!-- Status Icon -->
+                      <div class="flex-shrink-0">
+                        <div class="w-6 h-6 flex items-center justify-center"
+                             [ngClass]="getStatusIconClasses(document.status)">
+                          <svg *ngIf="document.status === 'a-valider'" class="w-full h-full" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                          </svg>
+                          <svg *ngIf="document.status === 'en-attente'" class="w-full h-full" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                          </svg>
+                          <svg *ngIf="document.status === 'valides'" class="w-full h-full" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                          </svg>
+                          <svg *ngIf="document.status === 'a-signer'" class="w-full h-full" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="flex flex-col">
+                        <h3 class="text-sm font-medium text-blue-600 hover:text-blue-800 cursor-pointer"
+                            (click)="onDocumentSelected(document)">
+                          {{ document.name }}
+                        </h3>
+                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                          <span>{{ document.type.toUpperCase() }}</span>
+                          <span>•</span>
+                          <span>{{ document.size }}</span>
+                          <span>•</span>
+                          <span *ngIf="document.category">{{ document.category }}</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
 
-                  <!-- Document Info -->
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center space-x-2">
-                      <h3 class="text-sm font-medium text-blue-600 hover:text-blue-800 cursor-pointer"
-                          (click)="onDocumentSelected(document)">
-                        {{ document.name }}
-                      </h3>
-                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-                            [ngClass]="getDocumentTypeClasses(document.type)">
-                        {{ document.type.toUpperCase() }}
-                      </span>
-                    </div>
-                    <div class="flex items-center space-x-4 mt-1 text-sm text-gray-500">
-                      <span>{{ document.size }}</span>
-                      <span *ngIf="document.category">{{ document.category }}</span>
-                      <span *ngIf="document.clientName" class="flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-                        </svg>
-                        {{ document.clientName }}
-                      </span>
-                      <span *ngIf="document.folderName" class="flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
-                        </svg>
-                        {{ document.folderName }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <!-- Date -->
-                  <div class="text-sm text-gray-500">
-                    {{ document.createdDate | date:'dd MMM, yyyy' }}
-                  </div>
-
-                  <!-- Actions -->
-                  <div class="flex items-center space-x-2">
-                    <button *ngIf="document.status === 'a-valider'"
-                            (click)="validateDocument(document)"
-                            class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors duration-150">
-                      Valider
-                    </button>
+                     <!-- Actions -->
+                    <div class="flex items-center space-x-4">
+                      <!-- Date -->
+                      <div class="text-xs text-gray-500">
+                        {{ document.createdDate | date:'dd MMM, yyyy' }}
+                      </div>
                     
-                    <!-- View/Download icon -->
-                    <button (click)="onDocumentSelected(document)"
-                            class="p-1 text-gray-400 hover:text-gray-600">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                      </svg>
-                    </button>
+                      <button *ngIf="document.status === 'a-valider'"
+                          (click)="validateDocument(document)"
+                          class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors duration-150">
+                        Valider
+                      </button>
                     
-                    <!-- Download icon -->
-                    <button (click)="downloadDocument(document)"
+                      <!-- View/Download icon -->
+                      <button (click)="onDocumentSelected(document)"
                             class="p-1 text-gray-400 hover:text-gray-600">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                      </button>
+                    
+                      <!-- Download icon -->
+                      <button (click)="downloadDocument(document)"
+                            class="p-1 text-gray-400 hover:text-gray-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Client Info -->
+                  <div class="flex items-center space-x-4 mt-1 text-xs text-gray-500">
+                    <span *ngIf="document.clientName" class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
                       </svg>
-                    </button>
+                      {{ document.clientName }}
+                    </span>
+                    <span *ngIf="document.folderName" class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
+                      </svg>
+                      {{ document.folderName }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -279,7 +283,7 @@ export class DocumentsComponent implements OnInit {
         // Filter by search term
         if (filter.searchTerm) {
           const searchTerm = filter.searchTerm.toLowerCase();
-          filtered = filtered.filter(doc => 
+          filtered = filtered.filter(doc =>
             doc.name.toLowerCase().includes(searchTerm) ||
             doc.clientName?.toLowerCase().includes(searchTerm) ||
             doc.folderName?.toLowerCase().includes(searchTerm) ||
@@ -453,15 +457,15 @@ export class DocumentsComponent implements OnInit {
   getStatusIconClasses(status: DocumentStatus): string {
     switch (status) {
       case 'a-valider':
-        return 'bg-red-100 text-red-600';
+        return 'text-red-600';
       case 'en-attente':
-        return 'bg-orange-100 text-orange-600';
+        return 'text-orange-600';
       case 'valides':
-        return 'bg-green-100 text-green-600';
+        return 'text-green-600';
       case 'a-signer':
-        return 'bg-blue-100 text-blue-600';
+        return 'text-blue-600';
       default:
-        return 'bg-gray-100 text-gray-600';
+        return 'text-gray-600';
     }
   }
 

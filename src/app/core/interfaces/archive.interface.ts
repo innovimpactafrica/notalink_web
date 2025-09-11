@@ -1,4 +1,3 @@
-// interfaces/archive-item.interface.ts
 export interface ArchiveItem {
   id: string;
   title: string;

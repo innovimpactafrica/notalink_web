@@ -1,5 +1,3 @@
-// interfaces/notaire.interface.ts
-
 export interface NotaireInfo {
   id?: string;
   prenom: string;

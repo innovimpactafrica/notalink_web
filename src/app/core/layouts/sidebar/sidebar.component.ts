@@ -28,9 +28,9 @@ interface MenuItem {
     <!-- Sidebar -->
     <div [class]="getSidebarClasses()">
       <!-- Logo -->
-      <div class="p-6 border-b border-gray-200">
-        <div class="flex items-center space-x-2">
-          <img src="images/logo.png" alt="notalink" class="lg:h-full h-8 w-auto">
+      <div class="p-6">
+        <div class="flex items-center justify-center">
+          <img src="images/logo.png" alt="notalink" class="lg:h-32 h-8 w-auto">
         </div>
       </div>
       
@@ -43,10 +43,10 @@ interface MenuItem {
               <button 
                 [class]="getMenuItemClass(item)"
                 type="button"
-                [routerLink]="item.subItems ? null : item.link"
+                [routerLink]="item.subItems ? undefined : item.link"
                 (click)="handleMenuClick(item, $event)">
                 <img [src]="item.icon" [alt]="item.label" class="w-5 h-5">
-                <span class="flex-1">{{ item.label }}</span>
+                <span class="flex-1" [class.text-yellow-500]="item.active">{{ item.label }}</span>
                 
                 <!-- Badge -->
                 <span *ngIf="item.badge" class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
@@ -68,15 +68,23 @@ interface MenuItem {
               <!-- Sub Menu Items -->
               <div 
                 *ngIf="item.subItems && item.expanded"
-                class="ml-8 mt-1 space-y-1 border-l border-gray-200 pl-4">
+                class="mt-1 space-y-1 pl-4">
                 <button 
                   *ngFor="let subItem of item.subItems"
                   [class]="getSubMenuItemClass(subItem)"
                   type="button"
                   [routerLink]="subItem.link"
                   (click)="navigateToPage(subItem)">
-                  <img [src]="subItem.icon" [alt]="subItem.label" class="w-4 h-4">
-                  <span>{{ subItem.label }}</span>
+                  <div class="flex items-center border-2 border-gray-700 rounded-full p-0.5"
+                  [class.bg-yellow-500]="subItem.active"
+                  [class.border-none]="subItem.active"
+                  ></div>
+                  <span class="flex-1" [class.text-yellow-500]="subItem.active">{{ subItem.label }}</span>
+                  <span *ngIf="subItem.badge" class="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full"
+                  [class.bg-yellow-500]="subItem.active"
+                  [class.text-white]="subItem.active">
+                    {{ subItem.badge }}
+                  </span>
                 </button>
               </div>
             </div>
@@ -120,10 +128,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
       expanded: false,
       active: false,
       subItems: [
-        { label: 'Profil', link: '/settings/profile', icon: 'images/user.svg', active: false },
-        { label: 'Sécurité', link: '/settings/security', icon: 'images/shield.svg', active: false },
-        { label: 'Notifications', link: '/settings/notifications', icon: 'images/bell.svg', active: false },
-        { label: 'Préférences', link: '/settings/preferences', icon: 'images/sliders.svg', active: false }
+        { label: 'Type de dossiers', link: '/settings/security', icon: 'images/shield.svg', badge: '6', active: false },
+        { label: 'Documents requis', link: '/settings/notifications', icon: 'images/bell.svg', badge: '5', active: false },
+        { label: 'Documents produits', link: '/settings/preferences', icon: 'images/sliders.svg', badge: '6', active: false }
       ]
     },
     { label: 'Deconnexion', link: '/logout', icon: 'images/logout.svg', active: false }
