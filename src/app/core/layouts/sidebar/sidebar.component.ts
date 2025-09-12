@@ -128,7 +128,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       expanded: false,
       active: false,
       subItems: [
-        { label: 'Type de dossiers', link: '/settings/security', icon: 'images/shield.svg', badge: '6', active: false },
+        { label: 'Type de dossiers', link: 'settings/dossier-types', icon: 'images/shield.svg', badge: '6', active: false },
         { label: 'Documents requis', link: '/settings/notifications', icon: 'images/bell.svg', badge: '5', active: false },
         { label: 'Documents produits', link: '/settings/preferences', icon: 'images/sliders.svg', badge: '6', active: false }
       ]

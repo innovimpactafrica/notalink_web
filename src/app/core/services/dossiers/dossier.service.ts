@@ -17,7 +17,7 @@ export class DossierService {
       progress: 65,
       nextAction: 'Signature Compromis',
       nextActionDate: '10/08/2023',
-      color: 'bg-[#D97706] text-[#D97706]',
+      color: 'bg-[#D4B036] text-[#D97706]',
       description: 'Acquisition d’un appartement de 3 pièces dans le quartier des Almadies à Dakar.',
       notaire: 'Me Fatou Ndiaye',
       clients: [
@@ -103,7 +103,7 @@ export class DossierService {
       progress: 80,
       nextAction: 'Signature statuts',
       nextActionDate: '08/08/2023',
-      color: 'bg-[#D97706] text-[#D97706]',
+      color: 'bg-[#D4B036] text-[#D97706]',
       description: 'Création d’une SARL pour une entreprise technologique à Dakar.',
       notaire: 'Me Awa Sène',
       clients: [
@@ -143,7 +143,7 @@ export class DossierService {
       progress: 45,
       nextAction: 'Mis à jour le',
       nextActionDate: '02/08/2023',
-      color: 'bg-[#D97706] text-[#D97706]',
+      color: 'bg-[#D4B036] text-[#D97706]',
       description: 'Vente d’un terrain agricole situé à Thiès.',
       notaire: 'Me Cheikh Fall',
       clients: [
@@ -183,7 +183,7 @@ export class DossierService {
       progress: 90,
       nextAction: 'Signature finale',
       nextActionDate: '05/08/2023',
-      color: 'bg-[#D97706] text-[#D97706]',
+      color: 'bg-[#D4B036] text-[#D97706]',
       description: 'Rédaction d’un testament olographe pour Cheikh Diallo.',
       notaire: 'Me Awa Sène',
       clients: [

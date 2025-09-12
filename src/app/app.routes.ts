@@ -63,6 +63,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/parametres/parametres.component').then(c => c.ParametresComponent) 
   },
   {
+    path: 'settings/dossier-types',
+    loadComponent: () => import('./features/parametres/dossier-types/dossier-types.component').then(c => c.DossierTypesComponent)
+  },
+  {
     path: 'payment',
     loadComponent: () => import('./features/payments/payments.component').then(c => c.PaymentsComponent) 
   },

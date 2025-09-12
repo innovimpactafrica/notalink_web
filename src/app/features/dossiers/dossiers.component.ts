@@ -49,7 +49,7 @@ export class DossiersComponent implements OnInit {
   getStatusClass(status: string): string {
     switch (status) {
       case 'En cours':
-        return 'bg-[#D4B036] bg-opacity-10 text-[#B8941F]';
+        return 'bg-[#FEF3C7] text-[#92400E]';
       case 'En attente':
         return 'bg-[#1C3055] bg-opacity-10 text-[#1C3055]';
       case 'Terminé':

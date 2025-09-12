@@ -54,22 +54,22 @@ import { Dossier } from '../../../core/interfaces/dossier.interface';
             <button 
               (click)="setActiveTab('apercu')"
               [class]="activeTab === 'apercu' 
-                ? 'py-4 px-1 w-full border-b-2 border-yellow-500 text-yellow-600 font-medium text-sm whitespace-nowrap' 
-                : 'py-4 px-1 w-full border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap'">
+                ? 'py-4 px-1 w-full border-b-2 border-yellow-500 text-[#D4B036] font-semibold text-md whitespace-nowrap' 
+                : 'py-4 px-1 w-full border-b-2 border-transparent text-gray-500 hover:tex[#D4B036] font-semibold text-md whitespace-nowrap'">
               Aperçu
             </button>
             <button 
               (click)="setActiveTab('documents')"
               [class]="activeTab === 'documents' 
-                ? 'py-4 px-1 w-full border-b-2 border-yellow-500 text-yellow-600 font-medium text-sm whitespace-nowrap' 
-                : 'py-4 px-1 w-full border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap'">
+                ? 'py-4 px-1 w-full border-b-2 border-yellow-500 text-[#D4B036] font-semibold text-md whitespace-nowrap' 
+                : 'py-4 px-1 w-full border-b-2 border-transparent text-gray-500 hover:tex[#D4B036] font-semibold text-md whitespace-nowrap'">
               Documents
             </button>
             <button 
               (click)="setActiveTab('paiements')"
               [class]="activeTab === 'paiements' 
-                ? 'py-4 px-1 w-full border-b-2 border-yellow-500 text-yellow-600 font-medium text-sm whitespace-nowrap' 
-                : 'py-4 px-1 w-full border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap'">
+                ? 'py-4 px-1 w-full border-b-2 border-yellow-500 text-[#D4B036] font-semibold text-md whitespace-nowrap' 
+                : 'py-4 px-1 w-full border-b-2 border-transparent text-gray-500 hover:tex[#D4B036] font-semibold text-md whitespace-nowrap'">
               Paiements
             </button>
           </nav>
