@@ -1,32 +1,38 @@
-import { Component, OnInit } from '@angular/core';
+// features/auth/register/register.component.ts
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { NotificationModalComponent, NotificationStatus } from '../../../shared/ui/notification-modal/notification-modal.component';
+import { AuthService } from '../../../core/services/auth.service';
+import { SignUpRequest } from '../../../shared/interfaces/auth.interface';
+import { CustomValidators } from '../../../shared/utils/validator.utils';
+
+type NotificationStatusType = 'success' | 'error' | 'info';
+
+interface NotificationStatus {
+  type: NotificationStatusType;
+}
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NotificationModalComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './register.component.html'
 })
 export class RegisterComponent implements OnInit {
-  registerForm!: FormGroup;
-  documentForm!: FormGroup;
-  currentStep = 1;
-  selectedFile: File | null = null;
-  maxFileSize = 10 * 1024 * 1024; // 10MB en bytes
-  
-  // Propriétés pour le modal de notification
-  isModalVisible = false;
-  modalStatus: NotificationStatus = 'success';
-  modalTitle = '';
-  modalDescription = '';
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
 
-  constructor(
-    private fb: FormBuilder,
-    private router: Router
-  ) {}
+  registerForm!: FormGroup;
+  passwordForm!: FormGroup;
+  currentStep = 1;
+  showPassword = false;
+  isLoading = false;
+  
+  // Propriétés pour les notifications
+  notificationMessage = '';
+  notificationStatus: NotificationStatus = { type: 'info' };
 
   ngOnInit(): void {
     this.initializeForms();
@@ -35,168 +41,104 @@ export class RegisterComponent implements OnInit {
   private initializeForms(): void {
     // Formulaire étape 1 - Informations personnelles
     this.registerForm = this.fb.group({
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
-      cabinet: [''],
-      email: ['', [Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern(/^[0-9\s\+\-\(\)]{8,15}$/)]]
+      prenom: ['', [Validators.required, Validators.minLength(2)]],
+      nom: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
+      telephone: ['', [Validators.required, CustomValidators.phone]],
+      adress: ['', [Validators.required]],
+      profil: ['', [Validators.required]]
     });
 
-    // Formulaire étape 2 - Document de l'ordre
-    this.documentForm = this.fb.group({
-      orderNumber: ['', [Validators.required]],
-      document: [null, [Validators.required]]
+    // Formulaire étape 2 - Mot de passe et coordonnées
+    this.passwordForm = this.fb.group({
+      lat: [0, [Validators.required]],
+      lon: [0, [Validators.required]],
+      password: ['', [Validators.required, CustomValidators.password]],
+      confirmPassword: ['', [Validators.required, CustomValidators.confirmPassword('password')]]
     });
   }
 
   onContinue(): void {
     if (this.registerForm.valid) {
       this.currentStep = 2;
+      this.clearNotification();
     } else {
       this.markFormGroupTouched(this.registerForm);
+      this.showNotification('error', 'Veuillez remplir tous les champs requis');
     }
   }
 
   goBack(): void {
     this.currentStep = 1;
+    this.clearNotification();
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      
-      // Vérifier la taille du fichier
-      if (file.size > this.maxFileSize) {
-        alert('Le fichier est trop volumineux. La taille maximale autorisée est de 10MB.');
-        return;
-      }
-
-      // Vérifier le type de fichier
-      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
-      if (!allowedTypes.includes(file.type)) {
-        alert('Type de fichier non autorisé. Seuls les fichiers PNG, JPG, JPEG et PDF sont acceptés.');
-        return;
-      }
-
-      this.selectedFile = file;
-      this.documentForm.patchValue({ document: file });
-      this.documentForm.get('document')?.markAsTouched();
-    }
-  }
-
-  removeFile(): void {
-    this.selectedFile = null;
-    this.documentForm.patchValue({ document: null });
-    this.documentForm.get('document')?.markAsTouched();
-  }
-
-  formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 
   onSubmit(): void {
-    if (this.documentForm.valid && this.registerForm.valid) {
-      const registrationData = {
-        // Données de l'étape 1
-        firstName: this.registerForm.get('firstName')?.value,
-        lastName: this.registerForm.get('lastName')?.value,
-        cabinet: this.registerForm.get('cabinet')?.value,
+    if (this.passwordForm.valid && this.registerForm.valid && !this.isLoading) {
+      this.isLoading = true;
+      this.clearNotification();
+
+      const signUpData: SignUpRequest = {
+        nom: this.registerForm.get('nom')?.value,
+        prenom: this.registerForm.get('prenom')?.value,
         email: this.registerForm.get('email')?.value,
-        phone: this.registerForm.get('phone')?.value,
-        
-        // Données de l'étape 2
-        orderNumber: this.documentForm.get('orderNumber')?.value,
-        document: this.selectedFile
+        password: this.passwordForm.get('password')?.value,
+        telephone: this.registerForm.get('telephone')?.value,
+        adress: this.registerForm.get('adress')?.value,
+        lat: this.passwordForm.get('lat')?.value || 0,
+        lon: this.passwordForm.get('lon')?.value || 0,
+        profil: this.registerForm.get('profil')?.value
       };
 
-      console.log('Données d\'inscription:', registrationData);
-
-      // Ici vous pourriez appeler votre service d'inscription
-      this.submitRegistration(registrationData);
-    
+      this.authService.signUp(signUpData).subscribe({
+        next: (response) => {
+          console.log('Inscription réussie:', response);
+          this.showNotification('success', 'Inscription réussie ! Redirection en cours...');
+          
+          setTimeout(() => {
+            this.router.navigate(['/dashboard']);
+          }, 1500);
+        },
+        error: (error) => {
+          this.isLoading = false;
+          console.error('Erreur d\'inscription:', error);
+          
+          // Gestion des messages d'erreur
+          let errorMessage = 'Une erreur est survenue lors de l\'inscription';
+          
+          if (error.status === 422) {
+            errorMessage = 'Données d\'inscription invalides';
+          } else if (error.status === 409) {
+            errorMessage = 'Un compte avec cet email existe déjà';
+          } else if (error.status === 0) {
+            errorMessage = 'Erreur de connexion au serveur';
+          } else if (error.userMessage) {
+            errorMessage = error.userMessage;
+          }
+          
+          this.showNotification('error', errorMessage);
+        },
+        complete: () => {
+          this.isLoading = false;
+        }
+      });
     } else {
-      this.markFormGroupTouched(this.documentForm);
+      this.markFormGroupTouched(this.passwordForm);
+      this.showNotification('error', 'Veuillez corriger les erreurs dans le formulaire');
     }
   }
 
-  private submitRegistration(data: any): void {
-    // Simulation d'un appel API
-    console.log('Envoi des données d\'inscription...', data);
-    
-    // Créer FormData pour l'envoi du fichier
-    const formData = new FormData();
-    formData.append('firstName', data.firstName);
-    formData.append('lastName', data.lastName);
-    formData.append('cabinet', data.cabinet || '');
-    formData.append('email', data.email || '');
-    formData.append('phone', data.phone);
-    formData.append('orderNumber', data.orderNumber);
-    
-    if (data.document) {
-      formData.append('document', data.document);
-    }
-
-    // Simulation d'une réponse avec succès/échec aléatoire pour la démo
-    setTimeout(() => {
-      const isSuccess = Math.random() > 0.3; // 70% de chance de succès
-      
-      if (isSuccess) {
-        // Succès
-        this.showNotificationModal(
-          'success',
-          'Inscription réussie !',
-          'Votre compte a été créé avec succès.'
-        );
-      } else {
-        // Échec
-        this.showNotificationModal(
-          'error',
-          'Erreur d\'inscription',
-          'Une erreur est survenue lors de la création de votre compte. Veuillez réessayer.'
-        );
-      }
-    }, 1500);
-
-    // Ici vous feriez l'appel HTTP vers votre backend
-    // this.registrationService.register(formData).subscribe({
-    //   next: (response) => {
-    //     this.showNotificationModal(
-    //       'success',
-    //       'Inscription réussie !',
-    //       'Votre compte a été créé avec succès.'
-    //     );
-    //   },
-    //   error: (error) => {
-    //     this.showNotificationModal(
-    //       'error',
-    //       'Erreur d\'inscription',
-    //       'Une erreur est survenue lors de la création de votre compte. Veuillez réessayer.'
-    //     );
-    //   }
-    // });
+  private showNotification(type: NotificationStatusType, message: string): void {
+    this.notificationStatus = { type };
+    this.notificationMessage = message;
   }
 
-  private showNotificationModal(status: NotificationStatus, title: string, description: string): void {
-    this.modalStatus = status;
-    this.modalTitle = title;
-    this.modalDescription = description;
-    this.isModalVisible = true;
-  }
-
-  onModalClosed(): void {
-    this.isModalVisible = false;
-    
-    // Si c'est un succès, rediriger vers la page de connexion
-    if (this.modalStatus === 'success') {
-      setTimeout(() => {
-        this.router.navigate(['/login']);
-      }, 300);
-    }
+  private clearNotification(): void {
+    this.notificationMessage = '';
   }
 
   navigateToLogin(): void {
@@ -215,11 +157,14 @@ export class RegisterComponent implements OnInit {
   }
 
   // Getters pour faciliter l'accès aux contrôles dans le template
-  get firstName() { return this.registerForm.get('firstName'); }
-  get lastName() { return this.registerForm.get('lastName'); }
-  get cabinet() { return this.registerForm.get('cabinet'); }
+  get prenom() { return this.registerForm.get('prenom'); }
+  get nom() { return this.registerForm.get('nom'); }
   get email() { return this.registerForm.get('email'); }
-  get phone() { return this.registerForm.get('phone'); }
-  get orderNumber() { return this.documentForm.get('orderNumber'); }
-  get document() { return this.documentForm.get('document'); }
+  get telephone() { return this.registerForm.get('telephone'); }
+  get adress() { return this.registerForm.get('adress'); }
+  get profil() { return this.registerForm.get('profil'); }
+  get lat() { return this.passwordForm.get('lat'); }
+  get lon() { return this.passwordForm.get('lon'); }
+  get password() { return this.passwordForm.get('password'); }
+  get confirmPassword() { return this.passwordForm.get('confirmPassword'); }
 }

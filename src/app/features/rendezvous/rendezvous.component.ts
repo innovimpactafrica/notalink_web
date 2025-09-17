@@ -6,7 +6,7 @@ import { MainLayoutComponent } from '../../core/layouts/main-layout/main-layout.
 import { NewRendezVousModalComponent } from '../../shared/components/rendezvous/new-rendezvous-modal/new-rendezvous-modal.component';
 import { RendezVousDetailsModalComponent } from '../../shared/components/rendezvous/rendezvous-details-modal/rendezvous-details-modal.component';
 import { RendezVousService } from '../../core/services/rendezvous/rendezvous.service';
-import { RendezVous, CreateRendezVousDto } from '../../core/interfaces/rendezvous.interface';
+import { RendezVous, CreateRendezVousDto } from '../../shared/interfaces/rendezvous.interface';
 
 @Component({
   selector: 'app-rendezvous',
@@ -39,47 +39,62 @@ import { RendezVous, CreateRendezVousDto } from '../../core/interfaces/rendezvou
         <div class="bg-white shadow-sm p-4 rounded-t-lg">
           <div class="flex items-center justify-between space-x-4">
             <div class="flex items-center space-x-2 w-full">
-              <div class="w-1/4">
-                <input 
-                  type="text" 
+              <div class="relative w-1/4">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                </div>
+                <input
+                  type="text"
                   [(ngModel)]="searchQuery"
-                  (ngModelChange)="onSearch()"
+                  (input)="onSearch()"
                   placeholder="Rechercher un rendez-vous..."
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4B068] focus:border-transparent"
+                >
               </div>
-              <div class="flex items-center space-x-2">
+              <div class="relative flex items-center space-x-1">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0.75 0.833008H13.25M2.83333 4.99967H11.1667M5.33333 9.16634H8.66667" stroke="#777777" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
                 <select 
                   [(ngModel)]="statusFilter"
                   (ngModelChange)="applyFilters()"
-                  class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  class="pl-7 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4B068] focus:border-transparent appearance-none bg-white">
                   <option value="">Statut</option>
                   <option value="planifie">Planifié</option>
                   <option value="confirme">Confirmé</option>
                   <option value="annule">Annulé</option>
                   <option value="termine">Terminé</option>
                 </select>
-                <button 
-                  (click)="clearFilters()"
-                  class="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-                  Filtrer
-                </button>
               </div>
+              <button (click)="clearFilters()" class="flex items-center gap-2 px-4 py-3 w-28 border border-gray-200 bg-white rounded-lg hover:bg-gray-50 transition-colors">
+                <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0.75 0.833008H13.25M2.83333 4.99967H11.1667M5.33333 9.16634H8.66667" stroke="#777777" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Filter
+              </button>
             </div>
             <div class="flex items-center">
               <button 
-                [class]="currentView === 'list' ? 'bg-yellow-100 text-yellow-800' : 'bg-white text-gray-600'"
+                [class]="currentView === 'list' ? 'bg-[#D4B036] bg-opacity-10 text-yellow-800' : 'bg-white text-gray-600'"
                 (click)="switchView('list')"
                 class="p-2 rounded-md hover:bg-gray-50">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7.5013 16.6663H16.668C17.1263 16.6663 17.5188 16.5033 17.8455 16.1772C18.1721 15.8511 18.3352 15.4586 18.3346 14.9997V13.333H7.5013V16.6663ZM1.66797 6.66634H5.83464V3.33301H3.33464C2.8763 3.33301 2.48408 3.49634 2.15797 3.82301C1.83186 4.14967 1.66852 4.5419 1.66797 4.99967V6.66634ZM1.66797 11.6663H5.83464V8.33301H1.66797V11.6663ZM3.33464 16.6663H5.83464V13.333H1.66797V14.9997C1.66797 15.458 1.8313 15.8505 2.15797 16.1772C2.48464 16.5038 2.87686 16.6669 3.33464 16.6663ZM7.5013 11.6663H18.3346V8.33301H7.5013V11.6663ZM7.5013 6.66634H18.3346V4.99967C18.3346 4.54134 18.1716 4.14912 17.8455 3.82301C17.5194 3.4969 17.1269 3.33356 16.668 3.33301H7.5013V6.66634Z" fill="#777777"/>
                 </svg>
               </button>
               <button 
-                [class]="currentView === 'calendar' ? 'bg-yellow-100 text-yellow-800' : 'bg-white text-gray-600'"
+                [class]="currentView === 'calendar' ? 'bg-[#D4B036]  bg-opacity-10 text-yellow-800' : 'bg-white text-gray-600'"
                 (click)="switchView('calendar')"
                 class="p-2 rounded-md hover:bg-gray-50">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6.66602 1.66699V5.00033" stroke="#D4B036" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M13.334 1.66699V5.00033" stroke="#D4B036" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M15.8333 3.33301H4.16667C3.24619 3.33301 2.5 4.0792 2.5 4.99967V16.6663C2.5 17.5868 3.24619 18.333 4.16667 18.333H15.8333C16.7538 18.333 17.5 17.5868 17.5 16.6663V4.99967C17.5 4.0792 16.7538 3.33301 15.8333 3.33301Z" stroke="#D4B036" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M2.5 8.33301H17.5" stroke="#D4B036" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
             </div>

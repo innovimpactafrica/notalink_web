@@ -6,7 +6,7 @@ import { DossierDocumentsComponent } from '../../../shared/components/dossiers/d
 import { DossierPaymentsComponent } from '../../../shared/components/dossiers/dossier-payments/dossier-payments.component';
 import { ActivatedRoute } from '@angular/router';
 import { DossierService } from '../../../core/services/dossiers/dossier.service';
-import { Dossier } from '../../../core/interfaces/dossier.interface';
+import { Dossier } from '../../../shared/interfaces/dossier.interface';
 
 @Component({
   selector: 'app-dossier-details',
@@ -84,8 +84,10 @@ import { Dossier } from '../../../core/interfaces/dossier.interface';
       </div>
 
       <div class="fixed bottom-10 right-10 mb-4">
-        <button class="rounded-full bg-yellow-600 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 p-4">
-          <img src="images/messenger.svg" alt="Add Dossier" class="w-8 h-8 m-2">
+        <button class="rounded-full bg-[#D4B036] shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 p-4">
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M6.06704 24.975H16.54C17.5276 24.975 17.5276 24.9819 18.0009 25.3317C18.4741 25.6814 23.8786 29.3645 23.8786 29.3645V24.975H24.1324C27.0267 24.975 29.3655 22.794 29.3655 20.078V5.75057C29.3655 3.03459 27.0198 0.833008 24.1324 0.833008H6.06704C3.1796 0.833008 0.833984 3.03459 0.833984 5.75057V20.078C0.833984 22.794 3.1796 24.975 6.06704 24.975Z" fill="#1C3055"/>
+        </svg>
         </button>
       </div>
     </app-main-layout>

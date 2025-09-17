@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import { Payment, PaymentStats, PaymentReceipt, FinancialReport, FinancialMetrics, CreatePaymentRequest, CreateInvoiceRequest } from '../../interfaces/payment.interface';
+import { Payment, PaymentStats, PaymentReceipt, FinancialReport, FinancialMetrics, CreatePaymentRequest, CreateInvoiceRequest } from '../../../shared/interfaces/payment.interface';
 
 @Injectable({
   providedIn: 'root'

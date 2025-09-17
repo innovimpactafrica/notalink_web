@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { AuthService } from '../../../core/services/auth.service';
 
 interface MenuItem {
   label: string;
@@ -43,10 +44,17 @@ interface MenuItem {
               <button 
                 [class]="getMenuItemClass(item)"
                 type="button"
-                [routerLink]="item.subItems ? undefined : item.link"
-                (click)="handleMenuClick(item, $event)">
+                [routerLink]="item.subItems ? undefined : (item.link === '/logout' ? undefined : item.link)"
+                (click)="handleMenuClick(item, $event)"
+                [disabled]="isLoggingOut && item.link === '/logout'">
                 <img [src]="item.icon" [alt]="item.label" class="w-5 h-5">
-                <span class="flex-1" [class.text-yellow-500]="item.active">{{ item.label }}</span>
+                
+                <!-- Loading spinner for logout -->
+                <div *ngIf="isLoggingOut && item.link === '/logout'" class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                
+                <span class="flex-1" [class.text-yellow-500]="item.active">
+                  {{ isLoggingOut && item.link === '/logout' ? 'Déconnexion...' : item.label }}
+                </span>
                 
                 <!-- Badge -->
                 <span *ngIf="item.badge" class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
@@ -105,10 +113,12 @@ interface MenuItem {
   `,
 })
 export class SidebarComponent implements OnInit, OnDestroy {
-  isMobileMenuOpen = false;
-  private routerSubscription!: Subscription;
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
 
-  constructor(private router: Router) {}
+  isMobileMenuOpen = false;
+  isLoggingOut = false;
+  private routerSubscription!: Subscription;
 
   menuItems: MenuItem[] = [
     { label: 'Tableau de bord', link: '/dashboard', icon: 'images/home_li.svg', active: false },
@@ -175,21 +185,23 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (item.subItems) {
       event.preventDefault();
       item.expanded = !item.expanded;
+    } else if (item.link === '/logout') {
+      event.preventDefault();
+      this.handleLogout();
     } else {
       this.navigateToPage(item);
     }
   }
 
   navigateToPage(item: MenuItem): void {
+    // Don't navigate if it's logout
+    if (item.link === '/logout') {
+      return;
+    }
+
     // Close mobile menu on navigation
     if (this.isMobileMenuOpen) {
       this.isMobileMenuOpen = false;
-    }
-
-    // Handle logout
-    if (item.link === '/logout') {
-      this.handleLogout();
-      return;
     }
 
     // Update active state and navigate
@@ -227,18 +239,37 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   private handleLogout(): void {
-    // Clear authentication data
-    localStorage.removeItem('authToken');
-    sessionStorage.clear();
-    this.router.navigate(['/login']);
+    if (this.isLoggingOut) return; // Prevent multiple logout calls
+
+    this.isLoggingOut = true;
+
+    // Close mobile menu if open
+    if (this.isMobileMenuOpen) {
+      this.isMobileMenuOpen = false;
+    }
+
+    this.authService.logout().subscribe({
+      next: () => {
+        this.isLoggingOut = false;
+        this.router.navigate(['/login']);
+      },
+      error: (error) => {
+        console.error('Erreur lors de la déconnexion:', error);
+        this.isLoggingOut = false;
+        // Even if logout fails on server, redirect to login
+        this.router.navigate(['/login']);
+      }
+    });
   }
 
   getMenuItemClass(item: MenuItem): string {
     const baseClass = 'flex items-center space-x-3 p-3 rounded-lg transition-colors w-full text-left cursor-pointer';
+    const disabledClass = this.isLoggingOut && item.link === '/logout' ? 'opacity-50 cursor-not-allowed' : '';
+    
     if (item.active) {
-      return `${baseClass} bg-[#1C3055] bg-opacity-10 border-l-4 border-[#D4B036] text-[#1C3055] font-medium`;
+      return `${baseClass} bg-[#1C3055] bg-opacity-10 border-l-4 border-[#D4B036] text-[#1C3055] font-medium ${disabledClass}`;
     }
-    return `${baseClass} text-[#4B5563] hover:text-gray-800 hover:bg-gray-50`;
+    return `${baseClass} text-[#4B5563] hover:text-gray-800 hover:bg-gray-50 ${disabledClass}`;
   }
 
   getSubMenuItemClass(item: MenuItem): string {

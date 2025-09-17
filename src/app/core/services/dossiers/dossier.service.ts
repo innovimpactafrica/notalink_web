@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Dossier } from '../../interfaces/dossier.interface';
+import { Dossier } from '../../../shared/interfaces/dossier.interface';
 
 @Injectable({
   providedIn: 'root'

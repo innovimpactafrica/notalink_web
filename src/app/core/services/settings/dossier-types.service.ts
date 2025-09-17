@@ -1,7 +1,7 @@
 // services/dossier-types.service.ts
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError, delay } from 'rxjs';
-import { DossierType, CreateDossierTypeRequest, UpdateDossierTypeRequest, DocumentType, CreateDocumentTypeRequest } from '../../interfaces/dossier-type.interface';
+import { DossierType, CreateDossierTypeRequest, UpdateDossierTypeRequest, DocumentType, CreateDocumentTypeRequest } from '../../../shared/interfaces/dossier-type.interface';
 
 @Injectable({
   providedIn: 'root'

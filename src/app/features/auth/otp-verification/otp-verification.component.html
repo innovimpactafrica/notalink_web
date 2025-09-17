@@ -24,24 +24,15 @@
       <span class="text-white font-medium">{{ maskedContact }}</span>
     </p>
 
-    <!-- Formulaire OTP -->
+    <!-- Formulaire OTP avec 6 inputs statiques -->
     <form [formGroup]="otpForm" (ngSubmit)="onSubmit()">
-      <!-- Champs OTP -->
       <div class="flex justify-center space-x-3 mb-6">
-        <input
-          *ngFor="let digit of otpDigits; let i = index"
-          #otpInput
-          type="text"
-          maxlength="1"
-          [id]="'otp-' + i"
-          (input)="onDigitInput($event, i)"
-          (keydown)="onKeyDown($event, i)"
-          (paste)="onPaste($event, i)"
-          (focus)="onFocus($event, i)"
-          class="w-12 h-12 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-[#D4B036] focus:border-transparent transition-all"
-          [class.border-red-500]="isInvalid"
-          autocomplete="off"
-        />
+        <input #otpInput1 type="text" maxlength="1" [value]="otpDigits[0]" (input)="onDigitChange(0, $event)" class="w-12 h-12 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-[#D4B036] focus:border-transparent transition-all" [class.border-red-500]="isInvalid" autocomplete="off" />
+        <input #otpInput2 type="text" maxlength="1" [value]="otpDigits[1]" (input)="onDigitChange(1, $event)" class="w-12 h-12 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-[#D4B036] focus:border-transparent transition-all" [class.border-red-500]="isInvalid" autocomplete="off" />
+        <input #otpInput3 type="text" maxlength="1" [value]="otpDigits[2]" (input)="onDigitChange(2, $event)" class="w-12 h-12 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-[#D4B036] focus:border-transparent transition-all" [class.border-red-500]="isInvalid" autocomplete="off" />
+        <input #otpInput4 type="text" maxlength="1" [value]="otpDigits[3]" (input)="onDigitChange(3, $event)" class="w-12 h-12 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-[#D4B036] focus:border-transparent transition-all" [class.border-red-500]="isInvalid" autocomplete="off" />
+        <input #otpInput5 type="text" maxlength="1" [value]="otpDigits[4]" (input)="onDigitChange(4, $event)" class="w-12 h-12 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-[#D4B036] focus:border-transparent transition-all" [class.border-red-500]="isInvalid" autocomplete="off" />
+        <input #otpInput6 type="text" maxlength="1" [value]="otpDigits[5]" (input)="onDigitChange(5, $event)" class="w-12 h-12 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-[#D4B036] focus:border-transparent transition-all" [class.border-red-500]="isInvalid" autocomplete="off" />
       </div>
 
       <!-- Message d'erreur -->

@@ -1,7 +1,7 @@
 // src/app/core/services/rendezvous.service.ts
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { RendezVous, CreateRendezVousDto } from '../../interfaces/rendezvous.interface';
+import { RendezVous, CreateRendezVousDto } from '../../../shared/interfaces/rendezvous.interface';
 
 @Injectable({
   providedIn: 'root'

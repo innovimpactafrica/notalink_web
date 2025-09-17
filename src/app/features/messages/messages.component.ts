@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { MainLayoutComponent } from '../../core/layouts/main-layout/main-layout.component';
 import { MessagesService } from '../../core/services/messages/message.service';
-import { Conversation, Message } from '../../core/interfaces/message.interface';
+import { Conversation, Message } from '../../shared/interfaces/message.interface';
 
 @Component({
   selector: 'app-messages',

@@ -11,7 +11,7 @@ import { SignatureRequestModalComponent } from '../../shared/components/signatur
 import { SignatureDetailsModalComponent } from '../../shared/components/signatures/signature-details-modal/signature-details-modal.component';
 import { SignatureListComponent } from '../../shared/components/signatures/signature-list/signature-list.component';
 import { SignatureService } from '../../core/services/signatures/signature.service';
-import { SignatureDocument, SignatureStats, SignatureRequest, Client, Document } from '../../core/interfaces/signature.interface';
+import { SignatureDocument, SignatureStats, SignatureRequest, Client, Document } from '../../shared/interfaces/signature.interface';
 
 @Component({
   selector: 'app-signatures',

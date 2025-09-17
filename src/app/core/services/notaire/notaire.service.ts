@@ -2,7 +2,7 @@
 
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { NotaireInfo, Document, Employe } from '../../interfaces/notaire.interface';
+import { NotaireInfo, Document, Employe } from '../../../shared/interfaces/notaire.interface';
 
 @Injectable({
   providedIn: 'root'

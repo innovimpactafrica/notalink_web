@@ -9,7 +9,7 @@ import { DocumentsJustificatifsComponent } from '../../shared/components/espace/
 import { RessourcesHumainesComponent } from '../../shared/components/espace/ressources-humaines/ressources-humaines.component';
 import { EmployeModalComponent } from '../../shared/components/espace/employe-modal/employe-modal.component';
 import { NotaireService } from '../../core/services/notaire/notaire.service';
-import { TabType, Employe } from '../../core/interfaces/notaire.interface';
+import { TabType, Employe } from '../../shared/interfaces/notaire.interface';
 
 @Component({
   selector: 'app-espace',

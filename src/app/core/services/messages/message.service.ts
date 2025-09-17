@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Conversation, Message, MessagesState } from '../../interfaces/message.interface';
+import { Conversation, Message, MessagesState } from '../../../shared/interfaces/message.interface';
 
 @Injectable({
   providedIn: 'root'

@@ -1,7 +1,7 @@
 // services/archive.service.ts
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { ArchiveItem, ArchiveFilter } from '../../interfaces/archive.interface';
+import { ArchiveItem, ArchiveFilter } from '../../../shared/interfaces/archive.interface';
 
 @Injectable({
   providedIn: 'root'

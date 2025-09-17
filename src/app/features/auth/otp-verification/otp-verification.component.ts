@@ -1,18 +1,24 @@
-import { Component, OnInit, OnDestroy, ViewChildren, QueryList, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-otp-verification',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule], // Added FormsModule
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './otp-verification.component.html'
 })
 export class OtpVerificationComponent implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChildren('otpInput') otpInputs!: QueryList<ElementRef>;
+  @ViewChild('otpInput1') otpInput1!: ElementRef;
+  @ViewChild('otpInput2') otpInput2!: ElementRef;
+  @ViewChild('otpInput3') otpInput3!: ElementRef;
+  @ViewChild('otpInput4') otpInput4!: ElementRef;
+  @ViewChild('otpInput5') otpInput5!: ElementRef;
+  @ViewChild('otpInput6') otpInput6!: ElementRef;
 
   otpForm!: FormGroup;
   otpDigits: string[] = ['', '', '', '', '', ''];
@@ -23,12 +29,13 @@ export class OtpVerificationComponent implements OnInit, OnDestroy, AfterViewIni
   isLoading = false;
   isInvalid = false;
   errorMessage = '';
-  
+
   isResendDisabled = true;
   resendCountdown = 30;
   private countdownSubscription?: Subscription;
 
   constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
     private formBuilder: FormBuilder,
     private router: Router,
     private route: ActivatedRoute
@@ -36,11 +43,15 @@ export class OtpVerificationComponent implements OnInit, OnDestroy, AfterViewIni
 
   ngOnInit(): void {
     this.initializeComponent();
-    this.startResendCountdown();
+    if (isPlatformBrowser(this.platformId)) {
+      this.startResendCountdown();
+    }
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.focusInput(0), 100);
+    if (isPlatformBrowser(this.platformId)) {
+      this.focusInput(0);
+    }
   }
 
   ngOnDestroy(): void {
@@ -76,92 +87,38 @@ export class OtpVerificationComponent implements OnInit, OnDestroy, AfterViewIni
     return contact;
   }
 
-  onDigitInput(event: Event, index: number): void {
+  onDigitChange(index: number, event: Event): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     const input = event.target as HTMLInputElement;
-    let value = input.value.replace(/[^0-9]/g, ''); // Only digits
+    const value = input.value.replace(/[^0-9]/g, '').charAt(0) || ''; // Premier chiffre ou vide
 
-    if (value.length > 1) {
-      value = value.charAt(0); // Take the first character
-    }
+    this.otpDigits[index] = value;
+    input.value = value; // Synchronise immédiatement
 
-    this.otpDigits[index] = value; // Update the array
-    input.value = value; // Ensure input reflects the value
     this.clearError();
 
+    // Focus au suivant si rempli
     if (value && index < 5) {
-      setTimeout(() => this.focusInput(index + 1), 0);
+      this.focusInput(index + 1);
+    } else if (!value && index > 0) {
+      this.focusInput(index - 1); // Retour si effacé
     }
 
     this.updateFormValidity();
-  }
-
-  onKeyDown(event: KeyboardEvent, index: number): void {
-    const input = event.target as HTMLInputElement;
-
-    if (event.key === 'Backspace') {
-      event.preventDefault();
-      if (input.value) {
-        this.otpDigits[index] = '';
-        input.value = '';
-        this.updateFormValidity();
-      } else if (index > 0) {
-        this.otpDigits[index - 1] = '';
-        const prevInput = this.otpInputs.toArray()[index - 1]?.nativeElement;
-        if (prevInput) prevInput.value = '';
-        setTimeout(() => this.focusInput(index - 1), 0);
-      }
-    } else if (event.key === 'Delete') {
-      event.preventDefault();
-      this.otpDigits[index] = '';
-      input.value = '';
-      this.updateFormValidity();
-    } else if (event.key === 'ArrowLeft' && index > 0) {
-      event.preventDefault();
-      setTimeout(() => this.focusInput(index - 1), 0);
-    } else if (event.key === 'ArrowRight' && index < 5) {
-      event.preventDefault();
-      setTimeout(() => this.focusInput(index + 1), 0);
-    } else if (!/[0-9]/.test(event.key) && !['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
-      event.preventDefault();
-    }
-  }
-
-  onPaste(event: ClipboardEvent, index: number): void {
-    event.preventDefault();
-    const pastedData = event.clipboardData?.getData('text') || '';
-    const digits = pastedData.replace(/[^0-9]/g, '').slice(0, 6);
-
-    // Start filling from the current index
-    for (let i = 0; i < 6; i++) {
-      this.otpDigits[i] = digits[i] || '';
-      const inputElement = this.otpInputs.toArray()[i]?.nativeElement;
-      if (inputElement) {
-        inputElement.value = this.otpDigits[i];
-      }
-    }
-
-    const nextEmptyIndex = digits.length < 6 ? digits.length : 5;
-    setTimeout(() => this.focusInput(nextEmptyIndex), 0);
-
-    this.updateFormValidity();
-    this.clearError();
-  }
-
-  onFocus(event: Event, index: number): void {
-    const input = event.target as HTMLInputElement;
-    setTimeout(() => input.select(), 0);
   }
 
   private focusInput(index: number): void {
-    const inputElement = this.otpInputs.toArray()[index]?.nativeElement;
-    if (inputElement) {
-      inputElement.focus();
-      inputElement.select();
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const inputs = [this.otpInput1, this.otpInput2, this.otpInput3, this.otpInput4, this.otpInput5, this.otpInput6];
+    if (index >= 0 && index < inputs.length && inputs[index]) {
+      inputs[index].nativeElement.focus();
     }
   }
 
   private updateFormValidity(): void {
-    // Validation via isCodeComplete
+    // Pas de logique complexe, isCodeComplete suffit
   }
 
   private clearError(): void {
@@ -178,7 +135,7 @@ export class OtpVerificationComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   onSubmit(): void {
-    if (this.isCodeComplete) {
+    if (this.isCodeComplete && isPlatformBrowser(this.platformId)) {
       this.isLoading = true;
       this.clearError();
 
@@ -194,9 +151,11 @@ export class OtpVerificationComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   private verifyOtpCode(data: any): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     setTimeout(() => {
       this.isLoading = false;
-      const isValidCode = this.otpCode === '123456'; // Test code
+      const isValidCode = this.otpCode === '123456';
 
       if (isValidCode) {
         console.log('Code OTP vérifié avec succès');
@@ -222,13 +181,17 @@ export class OtpVerificationComponent implements OnInit, OnDestroy, AfterViewIni
 
   private clearOtpInputs(): void {
     this.otpDigits = ['', '', '', '', '', ''];
-    this.otpInputs.toArray().forEach((input, index) => {
-      input.nativeElement.value = '';
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      [this.otpInput1, this.otpInput2, this.otpInput3, this.otpInput4, this.otpInput5, this.otpInput6].forEach(input => {
+        if (input?.nativeElement instanceof HTMLInputElement) {
+          input.nativeElement.value = '';
+        }
+      });
+    }
   }
 
   resendCode(): void {
-    if (this.isResendDisabled) return;
+    if (this.isResendDisabled || !isPlatformBrowser(this.platformId)) return;
 
     console.log('Renvoi du code OTP pour:', this.contact);
     this.startResendCountdown();
@@ -236,6 +199,8 @@ export class OtpVerificationComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   private startResendCountdown(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.isResendDisabled = true;
     this.resendCountdown = 30;
 

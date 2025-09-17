@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { MainLayoutComponent } from '../../core/layouts/main-layout/main-layout.component';
 import { FilterModalComponent } from '../../shared/components/archive/filter-modal/filter-modal.component';
 import { ArchiveService } from '../../core/services/archive/archive.service';
-import { ArchiveItem, ArchiveFilter } from '../../core/interfaces/archive.interface';
+import { ArchiveItem, ArchiveFilter } from '../../shared/interfaces/archive.interface';
 
 @Component({
   selector: 'app-archivages',

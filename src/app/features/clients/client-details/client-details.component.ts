@@ -1,7 +1,7 @@
 import { Component, inject, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Client } from '../../../core/interfaces/client.interface';
+import { Client } from '../../../shared/interfaces/client.interface';
 import { ClientService } from '../../../core/services/clients/client.service';
 import { MainLayoutComponent } from '../../../core/layouts/main-layout/main-layout.component';
 

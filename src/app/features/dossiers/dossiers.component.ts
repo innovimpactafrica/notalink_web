@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MainLayoutComponent } from '../../core/layouts/main-layout/main-layout.component';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Dossier } from '../../core/interfaces/dossier.interface';
+import { Dossier } from '../../shared/interfaces/dossier.interface';
 import { DossierService } from '../../core/services/dossiers/dossier.service';
 
 @Component({

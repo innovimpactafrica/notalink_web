@@ -7,8 +7,8 @@ import { CreateDocumentTypeModalComponent } from '../../../shared/components/set
 import { DeleteConfirmationModalComponent } from '../../../shared/components/settings/dossier-type/delete-confirmation-modal/delete-confirmation-modal.component';
 import { NotificationModalComponent, NotificationData } from '../../../shared/ui/notification-modal2/notification-modal2.component';
 import { DossierTypesService } from '../../../core/services/settings/dossier-types.service';
-import { DossierType } from '../../../core/interfaces/dossier-type.interface';
-import { DocumentType } from '../../../core/interfaces/dossier-type.interface'; // Ensure this is imported
+import { DossierType } from '../../../shared/interfaces/dossier-type.interface';
+import { DocumentType } from '../../../shared/interfaces/dossier-type.interface'; // Ensure this is imported
 import { DocumentListModalComponent } from '../../../shared/components/settings/dossier-type/document-list-modal/document-list-modal.component';
 
 @Component({

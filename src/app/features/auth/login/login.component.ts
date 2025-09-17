@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
+import { AuthService } from '../../../core/services/auth.service';
+import { SignInRequest } from '../../../shared/interfaces/auth.interface';
 
 @Component({
   selector: 'app-login',
@@ -13,17 +15,23 @@ import { ReactiveFormsModule } from '@angular/forms';
   ],
   templateUrl: './login.component.html'
 })
-export class LoginComponent {
-  loginForm: FormGroup;
-  showPassword = false;
-  rememberMe = false;
+export class LoginComponent implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
 
-  constructor(
-    private fb: FormBuilder,
-    private router: Router
-  ) {
+  loginForm!: FormGroup;
+  showPassword = false;
+  isLoading = false;
+  errorMessage = '';
+
+  ngOnInit(): void {
+    this.initializeForm();
+  }
+
+  private initializeForm(): void {
     this.loginForm = this.fb.group({
-      username: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       rememberMe: [false]
     });
@@ -34,12 +42,37 @@ export class LoginComponent {
   }
 
   onSubmit(): void {
-    if (this.loginForm.valid) {
-      const formData = this.loginForm.value;
-      console.log('Login attempt:', formData);
-      // Ici vous pouvez ajouter votre logique d'authentification
-      this.router.navigate(['/dashboard'], { 
-        queryParams: { username: formData.username, rememberMe: formData.rememberMe }
+    if (this.loginForm.valid && !this.isLoading) {
+      this.isLoading = true;
+      this.errorMessage = '';
+
+      const loginData: SignInRequest = {
+        email: this.loginForm.get('email')?.value,
+        password: this.loginForm.get('password')?.value
+      };
+
+      this.authService.signIn(loginData).subscribe({
+        next: (response) => {
+          this.router.navigate(['/dashboard']);
+        },
+        error: (error) => {
+          this.isLoading = false;
+          console.error('Erreur de connexion:', error);
+
+          // Gestion des messages d'erreur
+          if (error.status === 401) {
+            this.errorMessage = 'Email ou mot de passe incorrect';
+          } else if (error.status === 422) {
+            this.errorMessage = 'Données de connexion invalides';
+          } else if (error.status === 0) {
+            this.errorMessage = 'Erreur de connexion au serveur';
+          } else {
+            this.errorMessage = error.userMessage || 'Une erreur est survenue lors de la connexion';
+          }
+        },
+        complete: () => {
+          this.isLoading = false;
+        }
       });
     } else {
       this.markFormGroupTouched();

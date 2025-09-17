@@ -1,7 +1,10 @@
 // header.component.ts
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { AuthService } from '../../../core/services/auth.service';
+import { User } from '../../../shared/interfaces/user.interface';
 
 @Component({
   selector: 'app-header',
@@ -16,7 +19,7 @@ import { Router } from '@angular/router';
         </div>
         
         <!-- Right Side - Actions -->
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-3" *ngIf="currentUser">
           
           <!-- Notifications -->
           <div class="relative">
@@ -77,11 +80,11 @@ import { Router } from '@angular/router';
               class="flex items-center space-x-3 p-2 rounded-lg hover:bg-[#D4B036] transition-colors"
               (click)="toggleUserMenu()">
               <div class="h-8 w-8 bg-[#D4B036] bg-opacity-30 rounded-full flex items-center justify-center">
-                <span class="text-[#D4B036] font-semibold text-sm">{{ currentUser.initials }}</span>
+                <span class="text-[#D4B036] font-semibold text-sm">{{ getUserInitials() }}</span>
               </div>
               <div class="text-left hidden sm:block">
-                <div class="text-sm font-bold text-white">{{ currentUser.name }}</div>
-                <div class="text-xs text-[#D1D5DB]">{{ currentUser.role }}</div>
+                <div class="text-sm font-bold text-white">{{ getUserFullName() }}</div>
+                <div class="text-xs text-[#D1D5DB]">{{ getUserRole() }}</div>
               </div>
               <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -104,24 +107,29 @@ import { Router } from '@angular/router';
             </div>
           </div>
         </div>
+
+        <!-- Loading state when user is not available -->
+        <div *ngIf="!currentUser" class="flex items-center space-x-2">
+          <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+          <span class="text-white text-sm">Chargement...</span>
+        </div>
       </div>
     </header>
   `,
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   @Input() pageTitle: string = 'Tableau de bord';
   @Input() breadcrumbs: { label: string; link?: string }[] = [];
+
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   showNotifications = false;
   showUserMenu = false;
   notificationCount = 3;
   messageCount = 5;
-
-  currentUser = {
-    name: 'Fatou Ndiaye',
-    role: 'Notaire',
-    initials: 'FN'
-  };
+  currentUser: User | null = null;
+  private userSubscription?: Subscription;
 
   notifications = [
     { title: 'Nouveau document signé', time: 'Il y a 5 min' },
@@ -152,8 +160,49 @@ export class HeaderComponent implements OnInit {
     }
   ];
 
-  constructor(private router: Router) { }
   ngOnInit(): void {
+    // Subscribe to current user changes
+    this.userSubscription = this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
+    }
+  }
+
+  getUserInitials(): string {
+    if (!this.currentUser) return 'NN';
+    
+    const firstName = this.currentUser.prenom || '';
+    const lastName = this.currentUser.nom || '';
+    
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  }
+
+  getUserFullName(): string {
+    if (!this.currentUser) return 'Utilisateur';
+    
+    const firstName = this.currentUser.prenom || '';
+    const lastName = this.currentUser.nom || '';
+    
+    return `${firstName} ${lastName}`.trim() || 'Utilisateur';
+  }
+
+  getUserRole(): string {
+    if (!this.currentUser) return 'Utilisateur';
+    
+    // Map role enum to French display text
+    const roleMap: { [key: string]: string } = {
+      'NOTAIRE': 'Notaire',
+      'CLERC': 'Clerc',
+      'SECRETAIRE': 'Secrétaire',
+      'ADMIN': 'Administrateur'
+    };
+    
+    return roleMap[this.currentUser.profil] || this.currentUser.profil;
   }
 
   toggleNotifications(): void {
@@ -190,8 +239,15 @@ export class HeaderComponent implements OnInit {
   }
 
   private handleLogout(): void {
-    localStorage.removeItem('authToken');
-    sessionStorage.clear();
-    this.router.navigate(['/login']);
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/login']);
+      },
+      error: (error) => {
+        console.error('Erreur lors de la déconnexion:', error);
+        // Even if logout fails on server, redirect to login
+        this.router.navigate(['/login']);
+      }
+    });
   }
 }

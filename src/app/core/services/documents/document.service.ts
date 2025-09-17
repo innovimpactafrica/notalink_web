@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { Document, DocumentFolder, DocumentStats, DocumentStatus, DocumentFilter } from '../../interfaces/document.interface';
+import { Document, DocumentFolder, DocumentStats, DocumentStatus, DocumentFilter } from '../../../shared/interfaces/document.interface';
 
 @Injectable({
   providedIn: 'root'

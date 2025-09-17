@@ -1,7 +1,7 @@
 // services/signature.service.ts
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { SignatureDocument, SignatureStats, SignatureRequest, Client, Document, SignatureStatus } from '../../interfaces/signature.interface';
+import { SignatureDocument, SignatureStats, SignatureRequest, Client, Document, SignatureStatus } from '../../../shared/interfaces/signature.interface';
 
 @Injectable({
   providedIn: 'root'
