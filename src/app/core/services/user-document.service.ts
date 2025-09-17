@@ -1,15 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.prod';
 import { 
   UserDocument, 
   UserDocumentRequest, 
   DocumentStatusUpdate 
 } from '../../shared/interfaces/models.interface';
-import { 
-  ApiResponse, 
-} from '../../shared/interfaces/api-response.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -30,13 +27,13 @@ export class UserDocumentService {
   updateUserDocument(
     documentId: string, 
     request: UserDocumentRequest
-  ): Observable<ApiResponse<UserDocument>> {
+  ): Observable<UserDocument> {
     const formData = new FormData();
     formData.append('userId', request.userId);
     formData.append('name', request.name);
     formData.append('file', request.file);
 
-    return this.http.put<ApiResponse<UserDocument>>(
+    return this.http.put<UserDocument>(
       `${this.apiUrl}/${documentId}`,
       formData, 
       this.httpOptions
@@ -49,8 +46,8 @@ export class UserDocumentService {
    * @param documentId 
    * @returns
    */
-  deleteUserDocument(documentId: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(
+  deleteUserDocument(documentId: string): Observable<void> {
+    return this.http.delete<void>(
       `${this.apiUrl}/${documentId}`, 
       this.httpOptions
     );
@@ -61,8 +58,8 @@ export class UserDocumentService {
    * PUT /user/documents/user-documents/status
    * @returns
    */
-  updateDocumentStatus(request: DocumentStatusUpdate): Observable<ApiResponse<UserDocument>> {
-    return this.http.put<ApiResponse<UserDocument>>(
+  updateDocumentStatus(request: DocumentStatusUpdate): Observable<UserDocument> {
+    return this.http.put<UserDocument>(
       `${this.apiUrl}/user-documents/status`,
       request, 
       this.httpOptions
@@ -74,13 +71,13 @@ export class UserDocumentService {
    * POST /user/documents/upload
    * @returns
    */
-  uploadDocument(request: UserDocumentRequest): Observable<ApiResponse<UserDocument>> {
+  uploadDocument(request: UserDocumentRequest): Observable<UserDocument> {
     const formData = new FormData();
     formData.append('userId', request.userId);
     formData.append('name', request.name);
     formData.append('file', request.file);
 
-    return this.http.post<ApiResponse<UserDocument>>(
+    return this.http.post<UserDocument>(
       `${this.apiUrl}/upload`,
       formData, 
       this.httpOptions
@@ -93,8 +90,8 @@ export class UserDocumentService {
    * @param userId 
    * @returns
    */
-  getUserDocuments(userId: string): Observable<ApiResponse<UserDocument[]>> {
-    return this.http.get<ApiResponse<UserDocument[]>>(
+  getUserDocuments(userId: string): Observable<UserDocument[]> {
+    return this.http.get<UserDocument[]>(
       `${this.apiUrl}/${userId}`
     );
   }

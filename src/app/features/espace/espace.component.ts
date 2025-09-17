@@ -1,5 +1,3 @@
-// features/espace/espace.component.ts
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MainLayoutComponent } from '../../core/layouts/main-layout/main-layout.component';
@@ -9,7 +7,11 @@ import { DocumentsJustificatifsComponent } from '../../shared/components/espace/
 import { RessourcesHumainesComponent } from '../../shared/components/espace/ressources-humaines/ressources-humaines.component';
 import { EmployeModalComponent } from '../../shared/components/espace/employe-modal/employe-modal.component';
 import { NotaireService } from '../../core/services/notaire/notaire.service';
+import { UserService } from '../../core/services/user.service';
+import { UserDocumentService } from '../../core/services/user-document.service';
 import { TabType, Employe } from '../../shared/interfaces/notaire.interface';
+import { User, UpdateUserRequest } from '../../shared/interfaces/user.interface';
+import { UserDocument } from '../../shared/interfaces/models.interface';
 
 @Component({
   selector: 'app-espace',
@@ -46,11 +48,14 @@ import { TabType, Employe } from '../../shared/interfaces/notaire.interface';
         <div class="transition-all duration-300 flex-1">
           <app-informations-generales
             *ngIf="activeTab === 'informations'"
-            (infoUpdated)="onInfoUpdated()">
+            [userData]="currentUser"
+            (infoUpdated)="onInfoUpdated($event)">
           </app-informations-generales>
 
           <app-documents-justificatifs
             *ngIf="activeTab === 'documents'"
+            [documents]="userDocuments"
+            [userId]="currentUser?.id"
             (documentAdded)="onDocumentAdded()">
           </app-documents-justificatifs>
 
@@ -100,6 +105,8 @@ import { TabType, Employe } from '../../shared/interfaces/notaire.interface';
 })
 export class EspaceComponent implements OnInit {
   activeTab: TabType = 'informations';
+  currentUser: User | null = null;
+  userDocuments: UserDocument[] = [];
   
   tabs = [
     {
@@ -137,7 +144,9 @@ export class EspaceComponent implements OnInit {
 
   constructor(
     private notificationService: NotificationService,
-    private notaireService: NotaireService
+    private notaireService: NotaireService,
+    private userService: UserService,
+    private userDocumentService: UserDocumentService
   ) {}
 
   ngOnInit(): void {
@@ -147,6 +156,41 @@ export class EspaceComponent implements OnInit {
         this.showNotificationModal(notification);
       } else {
         this.hideNotificationModal();
+      }
+    });
+
+    // Récupérer les données de l'utilisateur connecté
+    this.loadCurrentUser();
+  }
+
+  private loadCurrentUser(): void {
+    this.userService.getCurrentUser().subscribe({
+      next: (user: User) => {
+        this.currentUser = user;
+        // Récupérer les documents de l'utilisateur
+        this.loadUserDocuments(user.id);
+      },
+      error: (error) => {
+        this.showErrorNotification(
+          'Erreur',
+          'Impossible de récupérer les informations de l\'utilisateur.'
+        );
+        console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+      }
+    });
+  }
+
+  private loadUserDocuments(userId: string): void {
+    this.userDocumentService.getUserDocuments(userId).subscribe({
+      next: (documents: UserDocument[]) => {
+        this.userDocuments = documents;
+      },
+      error: (error) => {
+        this.showErrorNotification(
+          'Erreur',
+          'Impossible de récupérer les documents de l\'utilisateur.'
+        );
+        console.error('Erreur lors de la récupération des documents:', error);
       }
     });
   }
@@ -160,19 +204,36 @@ export class EspaceComponent implements OnInit {
   }
 
   // Gestion des informations générales
-  onInfoUpdated(): void {
-    this.showSuccessNotification(
-      'Informations mises à jour',
-      'Vos informations personnelles ont été sauvegardées avec succès.'
-    );
+  onInfoUpdated(updatedData: UpdateUserRequest): void {
+    if (this.currentUser?.id) {
+      this.userService.updateUser(this.currentUser.id, updatedData).subscribe({
+        next: (updatedUser: User) => {
+          this.currentUser = updatedUser;
+          this.showSuccessNotification(
+            'Informations mises à jour',
+            'Vos informations personnelles ont été sauvegardées avec succès.'
+          );
+        },
+        error: (error) => {
+          this.showErrorNotification(
+            'Erreur',
+            'Une erreur est survenue lors de la mise à jour des informations.'
+          );
+          console.error('Erreur lors de la mise à jour de l\'utilisateur:', error);
+        }
+      });
+    }
   }
 
   // Gestion des documents
   onDocumentAdded(): void {
-    this.showSuccessNotification(
-      'Document ajouté',
-      'Le document a été ajouté avec succès et est en cours de vérification.'
-    );
+    if (this.currentUser?.id) {
+      this.loadUserDocuments(this.currentUser.id);
+      this.showSuccessNotification(
+        'Document ajouté',
+        'Le document a été ajouté avec succès et est en cours de vérification.'
+      );
+    }
   }
 
   // Gestion des employés
@@ -249,6 +310,16 @@ export class EspaceComponent implements OnInit {
   private showSuccessNotification(title: string, description?: string): void {
     this.showNotificationModal({
       status: 'success',
+      title,
+      description,
+      showCloseButton: true,
+      closeOnOverlayClick: true
+    });
+  }
+
+  private showErrorNotification(title: string, description?: string): void {
+    this.showNotificationModal({
+      status: 'error',
       title,
       description,
       showCloseButton: true,

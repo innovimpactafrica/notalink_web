@@ -1,16 +1,15 @@
-// src/app/interfaces/models.interface.ts
-
 export enum DocumentStatus {
   PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
+  VALIDATED = 'VALIDATED',
+  NEEDS_COMPLETION = 'NEEDS_COMPLETION',
   REJECTED = 'REJECTED'
 }
 
 export enum PaymentStatus {
   PENDING = 'PENDING',
-  PAID = 'PAID',
+  COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
-  OVERDUE = 'OVERDUE'
+  FAILED = 'FAILED'
 }
 
 export enum ProducedDocumentStatus {

@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
 import {
   User,
   UpdateUserRequest,
@@ -12,9 +11,6 @@ import {
 import {
   PasswordChangeRequest,
 } from '../../shared/interfaces/auth.interface';
-import {
-  ApiResponse
-} from '../../shared/interfaces/api-response.interface';
 import { environment } from '../../../environments/environment.prod';
 
 @Injectable({
@@ -26,87 +22,89 @@ export class UserService {
 
   private readonly httpOptions = {
     withCredentials: true,
-    headers: new HttpHeaders({
-    })
   };
 
+  /** Récupérer l'utilisateur courant
+   * Get /user/me
+   * @returns 
+   */
   getCurrentUser(): Observable<User> {
-    console.log('Calling getCurrentUser API:', `${this.baseUrl}/me`);
-    return this.http.get<User>(`${this.baseUrl}/me`, this.httpOptions)
-      .pipe(
-        catchError(error => {
-          console.error('Error in getCurrentUser:', error);
-          return this.handleError(error);
-        })
-      );
+    return this.http.get<User>(`${this.baseUrl}/me`, this.httpOptions);
   }
 
+  /** Récupérer un utilisateur par son ID
+   * Get /user/{id}
+   * @param id 
+   * @returns 
+   */
   getUserById(id: string): Observable<User> {
-    return this.http.get<ApiResponse<User>>(`${this.baseUrl}/${id}`, this.httpOptions)
-      .pipe(
-        map(response => response.data!),
-        catchError(this.handleError)
-      );
+    return this.http.get<User>(`${this.baseUrl}/${id}`, this.httpOptions);
   }
 
+  /** Mettre à jour un utilisateur
+   * Put /user/update/{id}
+   * @param id 
+   * @param userData 
+   * @returns 
+   */
   updateUser(id: string, userData: UpdateUserRequest): Observable<User> {
-    return this.http.put<ApiResponse<User>>(`${this.baseUrl}/update/${id}`, userData, this.httpOptions)
-      .pipe(
-        map(response => response.data!),
-        catchError(this.handleError)
-      );
+    return this.http.put<User>(`${this.baseUrl}/update/${id}`, userData, this.httpOptions);
   }
 
+  /** Mettre à jour la localisation d'un utilisateur
+   * Put /user/{id}/location
+   * @param userId 
+   * @param locationData 
+   * @returns 
+   */
   updateUserLocation(userId: string, locationData: UpdateLocationRequest): Observable<User> {
-    return this.http.put<ApiResponse<User>>(`${this.baseUrl}/${userId}/location`, locationData, this.httpOptions)
-      .pipe(
-        map(response => response.data!),
-        catchError(this.handleError)
-      );
+    return this.http.put<User>(`${this.baseUrl}/${userId}/location`, locationData, this.httpOptions);
   }
 
+  /** Mettre à jour la photo d'un utilisateur
+   * Post /user/photo/{id}
+   * @param id 
+   * @param photoData 
+   * @returns 
+   */
   updateUserPhoto(id: string, photoData: UpdatePhotoRequest): Observable<User> {
-    return this.http.post<ApiResponse<User>>(`${this.baseUrl}/photo/${id}`, photoData, this.httpOptions)
-      .pipe(
-        map(response => response.data!),
-        catchError(this.handleError)
-      );
+    return this.http.post<User>(`${this.baseUrl}/photo/${id}`, photoData, this.httpOptions);
   }
 
+  /** Changer le mot de passe d'un utilisateur
+   * Post /user/password/change
+   * @param changeData 
+   * @returns 
+   */
   changeUserPassword(changeData: PasswordChangeRequest): Observable<void> {
-    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/password/change`, changeData, this.httpOptions)
-      .pipe(
-        map(() => void 0),
-        catchError(this.handleError)
-      );
+    return this.http.post<void>(`${this.baseUrl}/password/change`, changeData, this.httpOptions);
   }
 
+  /** Activer/Désactiver le statut en ligne d'un utilisateur
+   * Patch /user/{id}/toggle-online
+   * @param id 
+   * @returns 
+   */
   toggleUserOnlineStatus(id: string): Observable<User> {
-    return this.http.patch<ApiResponse<User>>(`${this.baseUrl}/${id}/toggle-online`, {}, this.httpOptions)
-      .pipe(
-        map(response => response.data!),
-        catchError(this.handleError)
-      );
+    return this.http.patch<User>(`${this.baseUrl}/${id}/toggle-online`, {}, this.httpOptions);
   }
 
+  /** Mettre à jour le statut mariel d'un utilisateur
+   * Patch /user/{id}/marital-status
+   * @param id 
+   * @param maritalStatusData 
+   * @returns 
+   */
   updateMaritalStatus(id: string, maritalStatusData: UpdateMaritalStatusRequest): Observable<User> {
-    return this.http.patch<ApiResponse<User>>(`${this.baseUrl}/${id}/marital-status`, maritalStatusData, this.httpOptions)
-      .pipe(
-        map(response => response.data!),
-        catchError(this.handleError)
-      );
+    return this.http.patch<User>(`${this.baseUrl}/${id}/marital-status`, maritalStatusData, this.httpOptions);
   }
 
+  /** Supprimer un utilisateur
+   * Delete /user/{id}
+   * @param id 
+   * @returns 
+   */
   deleteUser(id: string): Observable<void> {
-    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/${id}`, this.httpOptions)
-      .pipe(
-        map(() => void 0),
-        catchError(this.handleError)
-      );
+    return this.http.delete<void>(`${this.baseUrl}/${id}`, this.httpOptions);
   }
-
-  private handleError = (error: any): Observable<never> => {
-    console.error('User Service Error:', error);
-    throw error;
-  };
 }

@@ -19,13 +19,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next): Observable<HttpEv
   // Toujours inclure les credentials (cookies HttpOnly)
   const authReq = req.clone({ withCredentials: true });
 
-  console.log('➡️ FINAL REQUEST (SESSION MODE):', {
-    url: authReq.url,
-    method: authReq.method,
-    headers: authReq.headers.keys().map(k => ({ [k]: authReq.headers.get(k) })),
-    body: authReq.body,
-  });
-
   return next(authReq).pipe(
     catchError(error => {
       if (error.status === 401 && !isPublicUrl) {
