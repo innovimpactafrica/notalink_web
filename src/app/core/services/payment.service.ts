@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.prod';
 import { 
   Payment, 
   PaymentRequest, 
@@ -9,7 +9,6 @@ import {
   PaginationParams 
 } from '../../shared/interfaces/models.interface';
 import { 
-  ApiResponse, 
   PaginatedResponse,
 } from '../../shared/interfaces/api-response.interface';
 
@@ -32,8 +31,8 @@ export class PaymentService {
   updatePayment(
     id: string, 
     request: PaymentRequest
-  ): Observable<ApiResponse<Payment>> {
-    return this.http.put<ApiResponse<Payment>>(
+  ): Observable<Payment> {
+    return this.http.put<Payment>(
       `${this.apiUrl}/${id}`,
       request, 
       this.httpOptions
@@ -46,8 +45,8 @@ export class PaymentService {
    * @param id 
    * @returns
    */
-  deletePayment(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(
+  deletePayment(id: string): Observable<void> {
+    return this.http.delete<void>(
       `${this.apiUrl}/${id}`, 
       this.httpOptions
     );
@@ -58,8 +57,8 @@ export class PaymentService {
    * POST /payments/
    * @returns
    */
-  createPayment(request: PaymentRequest): Observable<ApiResponse<Payment>> {
-    return this.http.post<ApiResponse<Payment>>(
+  createPayment(request: PaymentRequest): Observable<Payment> {
+    return this.http.post<Payment>(
       this.apiUrl,
       request, 
       this.httpOptions
@@ -78,12 +77,12 @@ export class PaymentService {
     cabinetId: string, 
     start: string, 
     end: string
-  ): Observable<ApiResponse<PaymentKPI>> {
+  ): Observable<PaymentKPI> {
     const params = new HttpParams()
       .set('start', start)
       .set('end', end);
 
-    return this.http.get<ApiResponse<PaymentKPI>>(
+    return this.http.get<PaymentKPI>(
       `${this.apiUrl}/kpi/cabinet/${cabinetId}`,
       { ...this.httpOptions, params }
     );

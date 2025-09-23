@@ -1,16 +1,23 @@
-export interface ApiResponse<T = any> {
-  data?: T;
-  message?: string;
-  success: boolean;
-  errors?: string[];
-  timestamp?: Date;
-}
-
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
+export interface PaginatedResponse<T> {
+  content: T[]; // Remplace data par content pour les réponses paginées
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      sorted: boolean;
+      unsorted: boolean;
+      empty: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
   };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  first: boolean;
+  empty: boolean;
+  number: number;
+  numberOfElements: number;
+  size: number;
 }

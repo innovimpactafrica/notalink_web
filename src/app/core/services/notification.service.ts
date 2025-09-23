@@ -1,81 +1,55 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { NotificationConfig, ToastNotification } from '../../shared/interfaces/notification.interface';
+import { BehaviorSubject } from 'rxjs';
+import { NotificationData, ButtonConfig } from '../../shared/ui/notification-modal/notification-modal.component';
 
 @Injectable({
   providedIn: 'root'
 })
 export class NotificationService {
-  private notifications = new BehaviorSubject<ToastNotification[]>([]);
-  private notificationId = 0;
+  private notificationSubject = new BehaviorSubject<NotificationData | null>(null);
+  public notification$ = this.notificationSubject.asObservable();
 
-  public notifications$: Observable<ToastNotification[]> = this.notifications.asObservable();
-
-  show(config: NotificationConfig): string {
-    const notification: ToastNotification = {
-      id: `notification-${++this.notificationId}`,
-      timestamp: new Date(),
-      duration: config.duration || 5000,
-      closable: config.closable !== false,
-      ...config
-    };
-
-    const currentNotifications = this.notifications.value;
-    this.notifications.next([...currentNotifications, notification]);
-
-    // Auto-remove notification after duration
-    if (notification.duration && notification.duration > 0) {
-      setTimeout(() => {
-        this.remove(notification.id);
-      }, notification.duration);
-    }
-
-    return notification.id;
+  showNotification(data: NotificationData): void {
+    this.notificationSubject.next(data);
   }
 
-  success(message: string, title?: string, duration?: number): string {
-    return this.show({
-      type: 'success',
-      message,
+  hideNotification(): void {
+    this.notificationSubject.next(null);
+  }
+
+  showSuccess(title: string, description?: string, buttonConfig?: ButtonConfig): void {
+    this.showNotification({
+      status: 'success',
       title,
-      duration
+      description,
+      buttonConfig
     });
   }
 
-  error(message: string, title?: string, duration?: number): string {
-    return this.show({
-      type: 'error',
-      message,
-      title: title || 'Erreur',
-      duration: duration || 0 // Erreurs persistent par défaut
-    });
-  }
-
-  warning(message: string, title?: string, duration?: number): string {
-    return this.show({
-      type: 'warning',
-      message,
+  showError(title: string, description?: string, buttonConfig?: ButtonConfig): void {
+    this.showNotification({
+      status: 'error',
       title,
-      duration
+      description,
+      buttonConfig
     });
   }
 
-  info(message: string, title?: string, duration?: number): string {
-    return this.show({
-      type: 'info',
-      message,
+  showWarning(title: string, description?: string, buttonConfig?: ButtonConfig): void {
+    this.showNotification({
+      status: 'warning',
       title,
-      duration
+      description,
+      buttonConfig
     });
   }
 
-  remove(id: string): void {
-    const currentNotifications = this.notifications.value;
-    const filteredNotifications = currentNotifications.filter(n => n.id !== id);
-    this.notifications.next(filteredNotifications);
-  }
-
-  clear(): void {
-    this.notifications.next([]);
+  showInfo(title: string, description?: string, buttonConfig?: ButtonConfig): void {
+    this.showNotification({
+      status: 'info',
+      title,
+      description,
+      buttonConfig
+    });
   }
 }

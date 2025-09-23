@@ -14,9 +14,6 @@ import {
   PasswordChangeRequest,
   AuthResponse,
 } from '../../shared/interfaces/auth.interface';
-import {
-  ApiResponse
-} from '../../shared/interfaces/api-response.interface';
 import { environment } from '../../../environments/environment.prod';
 
 @Injectable({
@@ -70,7 +67,7 @@ export class AuthService {
    * @returns 
    */
   resetPassword(resetData: PasswordResetRequest): Observable<void> {
-    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/password/reset`, resetData, this.httpOptions)
+    return this.http.post<void>(`${this.baseUrl}/password/reset`, resetData, this.httpOptions)
       .pipe(
         map(() => void 0),
         catchError(this.handleError)
@@ -84,7 +81,7 @@ export class AuthService {
    * @returns 
    */
   changePassword(id: string, changeData: PasswordChangeRequest): Observable<void> {
-    return this.http.put<ApiResponse<void>>(`${this.baseUrl}/password/change/${id}`, changeData, this.httpOptions)
+    return this.http.put<void>(`${this.baseUrl}/password/change/${id}`, changeData, this.httpOptions)
       .pipe(
         map(() => void 0),
         catchError(this.handleError)
@@ -99,9 +96,8 @@ export class AuthService {
    * @returns 
    */
   createReservataire(id: string, reservataireData: CreateReservataire): Observable<User> {
-    return this.http.post<ApiResponse<User>>(`${this.baseUrl}/reservataire/${id}`, reservataireData, this.httpOptions)
+    return this.http.post<User>(`${this.baseUrl}/reservataire/${id}`, reservataireData, this.httpOptions)
       .pipe(
-        map(response => response.data!),
         catchError(this.handleError)
       );
   }
@@ -112,7 +108,7 @@ export class AuthService {
    * @returns 
    */
   logout(): Observable<void> {
-    return this.http.get<ApiResponse<void>>(`${this.baseUrl}/logout`, this.httpOptions)
+    return this.http.get<void>(`${this.baseUrl}/api/auth/logout`, this.httpOptions)
       .pipe(
         tap(() => this.handleLogout()),
         map(() => void 0),

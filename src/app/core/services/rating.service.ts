@@ -1,15 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.prod';
 import { 
   Rating, 
   RatingRequest, 
   RatingAverage,
   PaginationParams 
 } from '../../shared/interfaces/models.interface';
-import { 
-  ApiResponse, 
+import {
   PaginatedResponse,
 } from '../../shared/interfaces/api-response.interface';
 
@@ -25,8 +24,8 @@ export class RatingService {
    * Noter un utilisateur
    * POST /ratings/rate
    */
-  rateUser(request: RatingRequest): Observable<ApiResponse<Rating>> {
-    return this.http.post<ApiResponse<Rating>>(
+  rateUser(request: RatingRequest): Observable<Rating> {
+    return this.http.post<Rating>(
       `${this.apiUrl}/rate`,
       request
     );
@@ -59,8 +58,8 @@ export class RatingService {
    * Récupérer la note moyenne d'un utilisateur
    * GET /ratings/average/{userId}
    */
-  getUserAverageRating(userId: string): Observable<ApiResponse<RatingAverage>> {
-    return this.http.get<ApiResponse<RatingAverage>>(
+  getUserAverageRating(userId: string): Observable<RatingAverage> {
+    return this.http.get<RatingAverage>(
       `${this.apiUrl}/average/${userId}`
     );
   }

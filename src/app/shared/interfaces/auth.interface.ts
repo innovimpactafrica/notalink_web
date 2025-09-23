@@ -23,8 +23,6 @@ export interface RefreshTokenRequest {
 
 export interface PasswordResetRequest {
   email: string;
-  password: string;
-  newPassword: string;
 }
 
 export interface PasswordChangeRequest {

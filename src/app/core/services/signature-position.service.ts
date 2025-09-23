@@ -1,14 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.prod';
 import { 
   SignaturePosition, 
   SignaturePositionRequest 
 } from '../../shared/interfaces/models.interface';
-import { 
-  ApiResponse, 
-} from '../../shared/interfaces/api-response.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -26,8 +23,8 @@ export class SignaturePositionService {
    * @param documentId 
    * @returns
    */
-  getDocumentSignatures(documentId: string): Observable<ApiResponse<SignaturePosition[]>> {
-    return this.http.get<ApiResponse<SignaturePosition[]>>(
+  getDocumentSignatures(documentId: string): Observable<SignaturePosition[]> {
+    return this.http.get<SignaturePosition[]>(
       `${this.apiUrl}/${documentId}/signatures`, 
       this.httpOptions
     );
@@ -42,8 +39,8 @@ export class SignaturePositionService {
   addSignaturePosition(
     documentId: string, 
     request: SignaturePositionRequest
-  ): Observable<ApiResponse<SignaturePosition>> {
-    return this.http.post<ApiResponse<SignaturePosition>>(
+  ): Observable<SignaturePosition> {
+    return this.http.post<SignaturePosition>(
       `${this.apiUrl}/${documentId}/signatures`,
       request, 
       this.httpOptions
@@ -56,8 +53,8 @@ export class SignaturePositionService {
    * @param positionId 
    * @returns
    */
-  deleteSignaturePosition(positionId: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(
+  deleteSignaturePosition(positionId: string): Observable<void> {
+    return this.http.delete<void>(
       `${this.apiUrl}/signatures/${positionId}`, 
       this.httpOptions
     );

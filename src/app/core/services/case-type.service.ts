@@ -1,22 +1,19 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.prod';
 import { 
   CaseType, 
   CaseTypeRequest, 
   RequiredDocument  
 } from '../../shared/interfaces/models.interface';
-import { 
-  ApiResponse,
-} from '../../shared/interfaces/api-response.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CaseTypeService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/case-type`;
+  private readonly apiUrl = `${environment.apiUrl}/case-types`;
   private readonly httpOptions = {
     withCredentials: true,
   };
@@ -27,8 +24,8 @@ export class CaseTypeService {
    * @param id 
    * @returns
    */
-  getCaseTypeById(id: string): Observable<ApiResponse<CaseType>> {
-    return this.http.get<ApiResponse<CaseType>>(
+  getCaseTypeById(id: string): Observable<CaseType> {
+    return this.http.get<CaseType>(
       `${this.apiUrl}/${id}`, this.httpOptions
     );
   }
@@ -42,8 +39,8 @@ export class CaseTypeService {
   updateCaseType(
     id: string, 
     request: CaseTypeRequest
-  ): Observable<ApiResponse<CaseType>> {
-    return this.http.put<ApiResponse<CaseType>>(
+  ): Observable<CaseType> {
+    return this.http.put<CaseType>(
       `${this.apiUrl}/${id}`,
       request, this.httpOptions
     );
@@ -55,8 +52,8 @@ export class CaseTypeService {
    * @param id 
    * @returns
    */
-  deleteCaseType(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(
+  deleteCaseType(id: string): Observable<void> {
+    return this.http.delete<void>(
       `${this.apiUrl}/${id}`, this.httpOptions
     );
   }
@@ -66,8 +63,8 @@ export class CaseTypeService {
    * POST /case-type/
    * @returns
    */
-  createCaseType(request: CaseTypeRequest): Observable<ApiResponse<CaseType>> {
-    return this.http.post<ApiResponse<CaseType>>(
+  createCaseType(request: CaseTypeRequest): Observable<CaseType> {
+    return this.http.post<CaseType>(
       this.apiUrl,
       request, this.httpOptions
     );
@@ -78,8 +75,8 @@ export class CaseTypeService {
    * GET /case-type/
    * @returns
    */
-  getAllCaseTypes(): Observable<ApiResponse<CaseType[]>> {
-    return this.http.get<ApiResponse<CaseType[]>>(this.apiUrl, this.httpOptions);
+  getAllCaseTypes(): Observable<CaseType[]> {
+    return this.http.get<CaseType[]>(this.apiUrl, this.httpOptions);
   }
 
   /**
@@ -90,10 +87,10 @@ export class CaseTypeService {
   addRequiredDocument(
     caseTypeId: string, 
     documentName: string
-  ): Observable<ApiResponse<RequiredDocument>> {
+  ): Observable<RequiredDocument> {
     const params = new HttpParams().set('documentName', documentName);
 
-    return this.http.post<ApiResponse<RequiredDocument>>(
+    return this.http.post<RequiredDocument>(
       `${this.apiUrl}/${caseTypeId}/required-documents`,
       null,
       { ...this.httpOptions ,params }
@@ -106,8 +103,8 @@ export class CaseTypeService {
    * @param caseTypeId 
    * @returns
    */
-  getRequiredDocuments(caseTypeId: string): Observable<ApiResponse<RequiredDocument[]>> {
-    return this.http.get<ApiResponse<RequiredDocument[]>>(
+  getRequiredDocuments(caseTypeId: string): Observable<RequiredDocument[]> {
+    return this.http.get<RequiredDocument[]>(
       `${this.apiUrl}/required-documents/case-type/${caseTypeId}`, this.httpOptions
     );
   }
@@ -122,8 +119,8 @@ export class CaseTypeService {
   removeRequiredDocument(
     caseTypeId: string, 
     documentId: string
-  ): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(
+  ): Observable<void> {
+    return this.http.delete<void>(
       `${this.apiUrl}/${caseTypeId}/required-documents/${documentId}`, this.httpOptions
     );
   }

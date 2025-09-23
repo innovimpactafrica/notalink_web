@@ -193,13 +193,12 @@ export interface CaseFileRequest {
   reference: string;
   title: string;
   description: string;
-  openingDate: Date;
-  closingDate?: Date;
-  lawyerId: string;
-  notaryId: string;
-  cabinetId: string;
-  caseTypeId: string;
-  status: CaseFileStatus;
+  openingDate: String | Date;
+  closingDate?: String | Date;
+  lawyerId: number;
+  notaryId: number;
+  cabinetId: number;
+  caseTypeId: number;
 }
 
 export interface CaseFileKPI {
@@ -313,6 +312,9 @@ export interface SignFormRequest {
 export interface PaginationParams {
   page?: number;
   size?: number;
+  sort?: string;
+  direction?: 'asc' | 'desc';
+  search?: string;
 }
 
 // Search parameters

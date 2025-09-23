@@ -5,10 +5,13 @@ import { LoadingService } from '../services/loading.service';
 
 export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   const loadingService = inject(LoadingService);
-  
-  loadingService.show();
-  
+
+  // reporter l'appel pour éviter NG0100
+  setTimeout(() => loadingService.show());
+
   return next(req).pipe(
-    finalize(() => loadingService.hide())
+    finalize(() => {
+      setTimeout(() => loadingService.hide());
+    })
   );
 };

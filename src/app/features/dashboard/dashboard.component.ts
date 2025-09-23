@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MainLayoutComponent } from '../../core/layouts/main-layout/main-layout.component';
 import { WelcomeCardComponent } from '../../shared/components/Dashbord/welcome-card/welcome-card.component';
@@ -8,6 +8,8 @@ import { PaymentCardComponent } from '../../shared/components/Dashbord/payment-c
 import { AlertCardComponent } from '../../shared/components/Dashbord/alert-card/alert-card.component';
 import { SignatureCardComponent } from '../../shared/components/Dashbord/signature-card/signature-card.component';
 import { WorkloadCardComponent } from '../../shared/components/Dashbord/workload-card/workload-card.component';
+import { UserService } from '../../core/services/user.service';
+import { User } from '../../shared/interfaces/user.interface';
 
 interface StatItem {
   label: string;
@@ -52,6 +54,13 @@ interface WorkloadItem {
   subtitle?: string;
 }
 
+interface WelcomeData {
+  userName: string;
+  date: string;
+  location: string;
+  stats: StatItem[];
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -68,21 +77,24 @@ interface WorkloadItem {
   ],
   templateUrl: './dashboard.component.html',
 })
-export class DashboardComponent {
-
-  // Static data
-  welcomeData = {
-    userName: 'Me Fatou Ndiaye',
-    date: 'Jeudi 27 Juillet 2025',
-    location: 'Cabinet Notarial Dakar',
+export class DashboardComponent implements OnInit {
+  
+  private readonly userService = inject(UserService);
+  
+  // Données dynamiques pour l'utilisateur connecté
+  welcomeData: WelcomeData = {
+    userName: '',
+    date: this.getCurrentDate(),
+    location: '',
     stats: [
       { label: 'Total dossiers', value: '100', icon: 'images/dossier.svg', bgColor: 'bg-yellow-100' },
       { label: 'Total clients', value: '48', icon: 'images/users.svg', bgColor: 'bg-blue-100' },
       { label: 'Dossiers ouverts', value: '75', icon: 'images/dossier_open.svg', bgColor: 'bg-green-100' },
       { label: 'Dossiers clôturés', value: '20', icon: 'images/dossier_success.svg', bgColor: 'bg-purple-100' }
-    ] as StatItem[]
+    ]
   };
 
+  // Données statiques (inchangées)
   chartData = {
     title: 'Répartition des dossiers (%)',
     period: 'Ce mois',
@@ -194,4 +206,57 @@ export class DashboardComponent {
       }
     ] as WorkloadItem[]
   };
+
+  ngOnInit(): void {
+    this.loadCurrentUser();
+  }
+
+  private loadCurrentUser(): void {
+    this.userService.getCurrentUser().subscribe({
+      next: (user: User) => {
+        this.updateWelcomeDataWithUser(user);
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement de l\'utilisateur:', error);
+        // En cas d'erreur, on garde les valeurs par défaut
+        this.setDefaultWelcomeData();
+      }
+    });
+  }
+
+  private updateWelcomeDataWithUser(user: User): void {
+    this.welcomeData = {
+      ...this.welcomeData,
+      userName: this.formatUserName(user),
+      location: user.adress || 'Cabinet Notarial'
+    };
+  }
+
+  private formatUserName(user: User): string {
+    if (user.profil && user.profil.toLowerCase() === 'notaire') {
+      return `Me ${user.prenom} ${user.nom}`;
+    }
+    return `${user.prenom} ${user.nom}`;
+  }
+
+  private setDefaultWelcomeData(): void {
+    this.welcomeData = {
+      ...this.welcomeData,
+      userName: 'Utilisateur',
+      location: 'Cabinet Notarial'
+    };
+  }
+
+  private getCurrentDate(): string {
+    const date = new Date();
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    };
+    
+    return date.toLocaleDateString('fr-FR', options)
+      .replace(/^\w/, c => c.toUpperCase());
+  }
 }

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.prod';
 import { 
   CaseProducedDocument, 
   CaseProducedDocumentType, 
@@ -12,7 +12,6 @@ import {
   PaginationParams 
 } from '../../shared/interfaces/models.interface';
 import { 
-  ApiResponse, 
   PaginatedResponse,
 } from '../../shared/interfaces/api-response.interface';
 
@@ -27,6 +26,28 @@ export class CaseProducedDocumentService {
   };
 
   /**
+   * Récupérer tous les types de documents
+   * GET /case-produced-documents/types
+   * @param paginationParams
+   * @returns
+   */
+  getDocumentTypes(paginationParams?: PaginationParams): Observable<PaginatedResponse<CaseProducedDocumentType>> {
+    let params = new HttpParams();
+    
+    if (paginationParams?.page) {
+      params = params.set('page', paginationParams.page.toString());
+    }
+    if (paginationParams?.size) {
+      params = params.set('size', paginationParams.size.toString());
+    }
+
+    return this.http.get<PaginatedResponse<CaseProducedDocumentType>>(
+      `${this.apiUrl}/types`,
+      { ...this.httpOptions, params }
+    );
+  }
+
+  /**
    * Mettre à jour le statut d'un document produit
    * PUT /case-produced-documents/{id}/status
    * @param id
@@ -36,13 +57,13 @@ export class CaseProducedDocumentService {
   updateDocumentStatus(
     id: string, 
     status: ProducedDocumentStatus
-  ): Observable<ApiResponse<CaseProducedDocument>> {
+  ): Observable<CaseProducedDocument> {
     const params = new HttpParams().set('status', status);
 
-    return this.http.put<ApiResponse<CaseProducedDocument>>(
+    return this.http.put<CaseProducedDocument>(
       `${this.apiUrl}/${id}/status`,
       null,
-      { ...this.httpOptions ,params }
+      { ...this.httpOptions, params }
     );
   }
 
@@ -52,8 +73,8 @@ export class CaseProducedDocumentService {
    * @param id
    * @returns
    */
-  getDocumentTypeById(id: string): Observable<ApiResponse<CaseProducedDocumentType>> {
-    return this.http.get<ApiResponse<CaseProducedDocumentType>>(
+  getDocumentTypeById(id: string): Observable<CaseProducedDocumentType> {
+    return this.http.get<CaseProducedDocumentType>(
       `${this.apiUrl}/types/${id}`, this.httpOptions
     );
   }
@@ -67,8 +88,8 @@ export class CaseProducedDocumentService {
   updateDocumentType(
     id: string, 
     request: CaseProducedDocumentTypeRequest
-  ): Observable<ApiResponse<CaseProducedDocumentType>> {
-    return this.http.put<ApiResponse<CaseProducedDocumentType>>(
+  ): Observable<CaseProducedDocumentType> {
+    return this.http.put<CaseProducedDocumentType>(
       `${this.apiUrl}/types/${id}`, 
       request, this.httpOptions
     );
@@ -80,8 +101,8 @@ export class CaseProducedDocumentService {
    * @param id
    * @returns
    */
-  deleteDocumentType(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(
+  deleteDocumentType(id: string): Observable<void> {
+    return this.http.delete<void>(
       `${this.apiUrl}/types/${id}`, this.httpOptions
     );
   }
@@ -93,8 +114,8 @@ export class CaseProducedDocumentService {
    */
   createDocumentType(
     request: CaseProducedDocumentTypeRequest
-  ): Observable<ApiResponse<CaseProducedDocumentType>> {
-    return this.http.post<ApiResponse<CaseProducedDocumentType>>(
+  ): Observable<CaseProducedDocumentType> {
+    return this.http.post<CaseProducedDocumentType>(
       `${this.apiUrl}/types`,
       request, this.httpOptions
     );
@@ -105,14 +126,14 @@ export class CaseProducedDocumentService {
    * POST /case-produced-documents/save
    * @returns
    */
-  saveDocument(request: CaseProducedDocumentRequest): Observable<ApiResponse<CaseProducedDocument>> {
+  saveDocument(request: CaseProducedDocumentRequest): Observable<CaseProducedDocument> {
     const formData = new FormData();
     formData.append('title', request.title);
     formData.append('caseFileId', request.caseFileId);
     formData.append('file', request.file);
     formData.append('documentTypeId', request.documentTypeId);
 
-    return this.http.post<ApiResponse<CaseProducedDocument>>(
+    return this.http.post<CaseProducedDocument>(
       `${this.apiUrl}/save`,
       formData, this.httpOptions
     );
@@ -140,7 +161,7 @@ export class CaseProducedDocumentService {
 
     return this.http.get<PaginatedResponse<CaseProducedDocument>>(
       `${this.apiUrl}/client/${clientId}/pending-signatures`,
-      { ...this.httpOptions ,params }
+      { ...this.httpOptions, params }
     );
   }
 
@@ -150,8 +171,8 @@ export class CaseProducedDocumentService {
    * @param clientId
    * @returns
    */
-  getClientDocumentKPI(clientId: string): Observable<ApiResponse<CaseProducedDocumentKPI>> {
-    return this.http.get<ApiResponse<CaseProducedDocumentKPI>>(
+  getClientDocumentKPI(clientId: string): Observable<CaseProducedDocumentKPI> {
+    return this.http.get<CaseProducedDocumentKPI>(
       `${this.apiUrl}/client/${clientId}/kpi`, this.httpOptions
     );
   }
@@ -188,7 +209,7 @@ export class CaseProducedDocumentService {
 
     return this.http.get<PaginatedResponse<CaseProducedDocument>>(
       `${this.apiUrl}/case-file/${caseFileId}`,
-      { ...this.httpOptions ,params }
+      { ...this.httpOptions, params }
     );
   }
 
@@ -198,8 +219,8 @@ export class CaseProducedDocumentService {
    * @param caseFileId
    * @returns
    */
-  getCaseFileDocumentKPI(caseFileId: string): Observable<ApiResponse<CaseProducedDocumentKPI>> {
-    return this.http.get<ApiResponse<CaseProducedDocumentKPI>>(
+  getCaseFileDocumentKPI(caseFileId: string): Observable<CaseProducedDocumentKPI> {
+    return this.http.get<CaseProducedDocumentKPI>(
       `${this.apiUrl}/case-file/${caseFileId}/kpi`, this.httpOptions
     );
   }
@@ -226,7 +247,7 @@ export class CaseProducedDocumentService {
 
     return this.http.get<PaginatedResponse<CaseProducedDocument>>(
       `${this.apiUrl}/cabinet/${cabinetId}/urgent-signatures`,
-      { ...this.httpOptions ,params }
+      { ...this.httpOptions, params }
     );
   }
 
@@ -236,8 +257,8 @@ export class CaseProducedDocumentService {
    * @param cabinetId
    * @returns
    */
-  getCabinetDocumentKPI(cabinetId: string): Observable<ApiResponse<CaseProducedDocumentKPI>> {
-    return this.http.get<ApiResponse<CaseProducedDocumentKPI>>(
+  getCabinetDocumentKPI(cabinetId: string): Observable<CaseProducedDocumentKPI> {
+    return this.http.get<CaseProducedDocumentKPI>(
       `${this.apiUrl}/cabinet/${cabinetId}/kpi`, this.httpOptions
     );
   }
@@ -248,8 +269,8 @@ export class CaseProducedDocumentService {
    * @param id
    * @returns
    */
-  deleteDocument(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(
+  deleteDocument(id: string): Observable<void> {
+    return this.http.delete<void>(
       `${this.apiUrl}/${id}`, this.httpOptions
     );
   }

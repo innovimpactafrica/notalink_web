@@ -1,14 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.prod';
 import { 
   Meeting, 
   MeetingRequest,
   PaginationParams 
 } from '../../shared/interfaces/models.interface';
 import { 
-  ApiResponse, 
   PaginatedResponse,
 } from '../../shared/interfaces/api-response.interface';
 
@@ -29,8 +28,8 @@ export class MeetingService {
    * @param id
    * @returns
    */
-  getMeetingById(id: string): Observable<ApiResponse<Meeting>> {
-    return this.http.get<ApiResponse<Meeting>>(
+  getMeetingById(id: string): Observable<Meeting> {
+    return this.http.get<Meeting>(
       `${this.apiUrl}/${id}`, 
       this.httpOptions
     );
@@ -45,8 +44,8 @@ export class MeetingService {
   updateMeeting(
     id: string, 
     request: MeetingRequest
-  ): Observable<ApiResponse<Meeting>> {
-    return this.http.put<ApiResponse<Meeting>>(
+  ): Observable<Meeting> {
+    return this.http.put<Meeting>(
       `${this.apiUrl}/${id}`,
       request, 
       this.httpOptions
@@ -59,8 +58,8 @@ export class MeetingService {
    * @param id
    * @returns
    */
-  deleteMeeting(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(
+  deleteMeeting(id: string): Observable<void> {
+    return this.http.delete<void>(
       `${this.apiUrl}/${id}`, 
       this.httpOptions
     );
@@ -71,8 +70,8 @@ export class MeetingService {
    * POST /meetings/
    * @returns
    */
-  createMeeting(request: MeetingRequest): Observable<ApiResponse<Meeting>> {
-    return this.http.post<ApiResponse<Meeting>>(
+  createMeeting(request: MeetingRequest): Observable<Meeting> {
+    return this.http.post<Meeting>(
       this.apiUrl,
       request, 
       this.httpOptions
@@ -137,8 +136,8 @@ export class MeetingService {
    * @param cabinetId
    * @returns
    */
-  getNextMeetingByCabinet(cabinetId: string): Observable<ApiResponse<Meeting>> {
-    return this.http.get<ApiResponse<Meeting>>(
+  getNextMeetingByCabinet(cabinetId: string): Observable<Meeting> {
+    return this.http.get<Meeting>(
       `${this.apiUrl}/next/cabinet/${cabinetId}`, 
       this.httpOptions
     );
@@ -154,10 +153,10 @@ export class MeetingService {
   getMeetingsByClientAndDate(
     clientId: string, 
     date: string
-  ): Observable<ApiResponse<Meeting[]>> {
+  ): Observable<Meeting[]> {
     const params = new HttpParams().set('date', date);
 
-    return this.http.get<ApiResponse<Meeting[]>>(
+    return this.http.get<Meeting[]>(
       `${this.apiUrl}/client/${clientId}/date`,
       { ...this.httpOptions ,params }
     );
@@ -173,10 +172,10 @@ export class MeetingService {
   getMeetingsByCabinetAndDate(
     cabinetId: string, 
     date: string
-  ): Observable<ApiResponse<Meeting[]>> {
+  ): Observable<Meeting[]> {
     const params = new HttpParams().set('date', date);
 
-    return this.http.get<ApiResponse<Meeting[]>>(
+    return this.http.get<Meeting[]>(
       `${this.apiUrl}/cabinet/${cabinetId}/date`,
       { ...this.httpOptions ,params }
     );

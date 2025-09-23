@@ -1,4 +1,3 @@
-// features/signatures/signatures.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,6 +25,7 @@ import { SignatureDocument, SignatureStats, SignatureRequest, Client, Document }
     SignatureDetailsModalComponent,
     SignatureListComponent
   ],
+  providers: [NotificationService],
   template: `
     <app-main-layout pageTitle="Signatures">
       <!-- Header Section -->

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DocumentService } from '../../core/services/documents/document.service';
+import { CaseProducedDocumentService } from '../../core/services/case-produced-document.service';
 import { MainLayoutComponent } from '../../core/layouts/main-layout/main-layout.component';
 import { DocumentSearchComponent } from '../../shared/components/documents/document-search/document-search.component';
 import { DocumentTabsComponent } from '../../shared/components/documents/document-tabs/document-tabs.component';
@@ -14,6 +15,7 @@ import { NotificationModalComponent, NotificationService } from '../../shared/ui
 import { Document, DocumentFolder, DocumentStats, DocumentStatus } from '../../shared/interfaces/document.interface';
 import { Observable, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { CaseProducedDocument, CaseProducedDocumentRequest } from '../../shared/interfaces/models.interface';
 
 @Component({
   selector: 'app-documents',
@@ -64,7 +66,6 @@ import { map } from 'rxjs/operators';
             (filterClicked)="onFilterClick()">
           </app-document-search>
         </div>
-
 
         <!-- Main Content Area -->
         <div class="space-y-6">
@@ -266,6 +267,7 @@ export class DocumentsComponent implements OnInit {
 
   constructor(
     private documentService: DocumentService,
+    private caseProducedDocumentService: CaseProducedDocumentService,
     public notificationService: NotificationService
   ) {
     this.documentStats$ = this.documentService.getDocumentStats();
@@ -274,9 +276,6 @@ export class DocumentsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.documentService.folders$.subscribe(folders => {
-      console.log('Folders loaded:', folders);
-    });
   }
 
   private getFilteredDocuments(): Observable<Document[]> {
@@ -319,7 +318,6 @@ export class DocumentsComponent implements OnInit {
   onTabChange(tab: DocumentStatus): void {
     this.activeTab = tab;
     this.documentService.setFilter({ status: tab });
-    // Refresh filtered documents
     this.filteredDocuments$ = this.getFilteredDocuments();
   }
 
@@ -343,7 +341,6 @@ export class DocumentsComponent implements OnInit {
   }
 
   downloadDocument(document: Document): void {
-    // Implement download logic
     this.notificationService.showSuccess(
       'Téléchargement démarré',
       `Le document "${document.name}" est en cours de téléchargement.`
@@ -358,13 +355,13 @@ export class DocumentsComponent implements OnInit {
     this.isAddModalVisible = false;
   }
 
-  onDocumentAdded(document: any): void {
-    this.documentService.addDocument(document).subscribe({
-      next: () => {
+  onDocumentAdded(documentData: CaseProducedDocumentRequest): void {
+    this.caseProducedDocumentService.saveDocument(documentData).subscribe({
+      next: (document: CaseProducedDocument) => {
         this.closeAddDocumentModal();
         this.notificationService.showSuccess(
           'Document ajouté avec succès',
-          `Le document "${document.name}" a été ajouté.`
+          `Le document "${document.title}" a été ajouté.`
         );
         // Refresh filtered documents to show the new document
         this.filteredDocuments$ = this.getFilteredDocuments();
@@ -396,7 +393,6 @@ export class DocumentsComponent implements OnInit {
           'Document validé avec succès',
           `Le document "${event.document.name}" a été validé.`
         );
-        // Refresh filtered documents to show updated status
         this.filteredDocuments$ = this.getFilteredDocuments();
       },
       error: (error) => {
@@ -459,7 +455,6 @@ export class DocumentsComponent implements OnInit {
   }
 
   onNotificationButtonClicked(action: 'primary' | 'secondary'): void {
-    // Handle notification button clicks
     if (action === 'primary') {
       // Handle primary action based on context
     }

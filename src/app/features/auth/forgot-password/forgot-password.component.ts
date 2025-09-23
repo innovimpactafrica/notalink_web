@@ -1,23 +1,42 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+import { NotificationModalComponent, NotificationData, NotificationService } from '../../../shared/ui/notification-modal/notification-modal.component';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NotificationModalComponent],
   templateUrl: './forgot-password.component.html'
 })
 export class ForgotPasswordComponent implements OnInit {
   forgotPasswordForm!: FormGroup;
-  contactMethod: 'email' | 'phone' = 'email';
   isLoading = false;
+  notificationData: NotificationData | null = null;
+
+  @ViewChild(NotificationModalComponent) notificationModal?: NotificationModalComponent;
 
   constructor(
     private formBuilder: FormBuilder,
-    private router: Router
-  ) {}
+    private router: Router,
+    private authService: AuthService,
+    private notificationService: NotificationService
+  ) {
+    this.notificationService.notification$.subscribe(data => {
+      this.notificationData = data;
+      if (data && this.notificationModal) {
+        this.notificationModal.isVisible = true;
+        this.notificationModal.status = data.status;
+        this.notificationModal.title = data.title;
+        this.notificationModal.description = data.description;
+        this.notificationModal.buttonConfig = data.buttonConfig;
+      } else if (!data && this.notificationModal) {
+        this.notificationModal.isVisible = false;
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.initializeForm();
@@ -25,82 +44,45 @@ export class ForgotPasswordComponent implements OnInit {
 
   private initializeForm(): void {
     this.forgotPasswordForm = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern(/^(\+221|00221)?[7][0-9]{8}$/)]],
+      email: ['', [Validators.required, Validators.email]]
     });
-
-    // Écouter les changements de méthode de contact
-    this.updateValidators();
-  }
-
-  setContactMethod(method: 'email' | 'phone'): void {
-    this.contactMethod = method;
-    this.updateValidators();
-  }
-
-  private updateValidators(): void {
-    const emailControl = this.forgotPasswordForm.get('email');
-    const phoneControl = this.forgotPasswordForm.get('phone');
-
-    if (this.contactMethod === 'email') {
-      // Activer les validateurs pour email, désactiver pour téléphone
-      emailControl?.setValidators([Validators.required, Validators.email]);
-      phoneControl?.clearValidators();
-      phoneControl?.setValue('');
-    } else {
-      // Activer les validateurs pour téléphone, désactiver pour email
-      phoneControl?.setValidators([
-        Validators.required, 
-        Validators.pattern(/^(\+221|00221)?[7][0-9]{8}$/)
-      ]);
-      emailControl?.clearValidators();
-      emailControl?.setValue('');
-    }
-
-    // Mettre à jour le statut de validation
-    emailControl?.updateValueAndValidity();
-    phoneControl?.updateValueAndValidity();
   }
 
   onSubmit(): void {
     if (this.forgotPasswordForm.valid) {
       this.isLoading = true;
 
-      const formData = {
-        contactMethod: this.contactMethod,
-        [this.contactMethod]: this.forgotPasswordForm.get(this.contactMethod)?.value
-      };
+      const email = this.forgotPasswordForm.get('email')?.value;
 
-      console.log('Données du formulaire:', formData);
-
-      // Simulation d'appel API
-      this.sendVerificationCode(formData);
+      this.authService.resetPassword({ email }).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.notificationService.showSuccess(
+            'Lien de réinitialisation envoyé',
+            'Un lien de réinitialisation a été envoyé avec succès à votre adresse email.',
+            {
+              type: 'single',
+              primaryText: 'Aller à la connexion'
+            }
+          );
+        },
+        error: (error) => {
+          this.isLoading = false;
+          // Afficher une notification personnalisée en cas d'erreur (email inexistant)
+          this.notificationService.showWarning(
+            'Email non trouvé',
+            'Veuillez vérifier que vous avez bien saisi votre email. Si vous n\'avez pas encore de compte, veuillez en créer un en cliquant sur "Créer un compte".',
+            {
+              type: 'multiple',
+              primaryText: 'Créer un compte',
+              secondaryText: 'Réécrire l\'email'
+            }
+          );
+        }
+      });
     } else {
       this.markFormGroupTouched();
     }
-  }
-
-  private sendVerificationCode(data: any): void {
-    // Simuler un appel API
-    setTimeout(() => {
-      this.isLoading = false;
-      console.log('Code de vérification envoyé:', data);
-      
-      // Ici vous pouvez :
-      // 1. Appeler votre service de réinitialisation
-      // 2. Naviguer vers la page de vérification du code
-      // 3. Afficher un message de succès
-      
-      // Exemple : navigation vers la page de vérification du code
-      this.router.navigate(['/otp-verification'], { 
-        queryParams: { 
-          method: this.contactMethod,
-          contact: data[this.contactMethod]
-        }
-      });
-
-      alert(`Code de vérification envoyé par ${this.contactMethod === 'email' ? 'email' : 'SMS'} !`);
-    }, 2000);
   }
 
   private markFormGroupTouched(): void {
@@ -114,16 +96,10 @@ export class ForgotPasswordComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  // Getters pour faciliter l'accès aux contrôles dans le template
   get emailControl() {
     return this.forgotPasswordForm.get('email');
   }
 
-  get phoneControl() {
-    return this.forgotPasswordForm.get('phone');
-  }
-
-  // Méthodes utilitaires pour la validation
   isFieldInvalid(fieldName: string): boolean {
     const field = this.forgotPasswordForm.get(fieldName);
     return !!(field && field.invalid && field.touched);
@@ -133,17 +109,24 @@ export class ForgotPasswordComponent implements OnInit {
     const field = this.forgotPasswordForm.get(fieldName);
     if (field?.errors && field.touched) {
       if (field.errors['required']) {
-        return fieldName === 'email' 
-          ? 'L\'adresse email est requise' 
-          : 'Le numéro de téléphone est requis';
+        return 'L\'adresse email est requise';
       }
       if (field.errors['email']) {
         return 'Format d\'email invalide';
       }
-      if (field.errors['pattern']) {
-        return 'Format de téléphone invalide';
-      }
     }
     return '';
+  }
+
+  onModalButtonClick(action: string): void {
+    if (this.notificationModal) {
+      if (action === 'primary') { // "Créer un compte"
+        this.notificationModal.onClose();
+        this.router.navigate(['/register']); // Rediriger vers la page d'inscription
+      } else if (action === 'secondary') { // "Réécrire l'email"
+        this.notificationModal.onClose();
+        this.forgotPasswordForm.get('email')?.reset(); // Réinitialiser le champ email
+      }
+    }
   }
 }

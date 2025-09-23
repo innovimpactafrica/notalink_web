@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.prod';
 import {
     Cabinet,
     CabinetRequest,
@@ -9,7 +9,6 @@ import {
     CabinetSearchParams
 } from '../../shared/interfaces/models.interface';
 import {
-    ApiResponse,
     PaginatedResponse,
 } from '../../shared/interfaces/api-response.interface';
 
@@ -44,7 +43,7 @@ export class CabinetService {
     updateCabinet(
         id: string,
         request: CabinetRequest
-    ): Observable<ApiResponse<Cabinet>> {
+    ): Observable<Cabinet> {
         const formData = new FormData();
         formData.append('name', request.name);
         formData.append('address', request.address);
@@ -59,7 +58,7 @@ export class CabinetService {
             formData.append('logoFile', request.logoFile);
         }
 
-        return this.http.put<ApiResponse<Cabinet>>(
+        return this.http.put<Cabinet>(
             `${this.apiUrl}/${id}`,
             formData, this.httpOptions
         );
@@ -71,8 +70,8 @@ export class CabinetService {
      * @param id
      * @returns 
      */
-    deleteCabinet(id: string): Observable<ApiResponse<void>> {
-        return this.http.delete<ApiResponse<void>>(
+    deleteCabinet(id: string): Observable<void> {
+        return this.http.delete<void>(
             `${this.apiUrl}/${id}`, this.httpOptions
         );
     }
@@ -87,8 +86,8 @@ export class CabinetService {
     addAgentToCabinet(
         cabinetId: string,
         agentId: string
-    ): Observable<ApiResponse<CabinetAgent>> {
-        return this.http.post<ApiResponse<CabinetAgent>>(
+    ): Observable<CabinetAgent> {
+        return this.http.post<CabinetAgent>(
             `${this.apiUrl}/${cabinetId}/agents/${agentId}`,
             null, this.httpOptions
         );
@@ -104,8 +103,8 @@ export class CabinetService {
     removeAgentFromCabinet(
         cabinetId: string,
         agentId: string
-    ): Observable<ApiResponse<void>> {
-        return this.http.delete<ApiResponse<void>>(
+    ): Observable<void> {
+        return this.http.delete<void>(
             `${this.apiUrl}/${cabinetId}/agents/${agentId}`, this.httpOptions
         );
     }
@@ -115,7 +114,7 @@ export class CabinetService {
      * POST /cabinets/save
      * @returns
      */
-    createCabinet(request: CabinetRequest): Observable<ApiResponse<Cabinet>> {
+    createCabinet(request: CabinetRequest): Observable<Cabinet> {
         const formData = new FormData();
         formData.append('name', request.name);
         formData.append('address', request.address);
@@ -130,7 +129,7 @@ export class CabinetService {
             formData.append('logoFile', request.logoFile);
         }
 
-        return this.http.post<ApiResponse<Cabinet>>(
+        return this.http.post<Cabinet>(
             `${this.apiUrl}/save`,
             formData, this.httpOptions
         );
@@ -142,8 +141,8 @@ export class CabinetService {
      * @param cabinetId
      * @returns
      */
-    getCabinetAgents(cabinetId: string): Observable<ApiResponse<CabinetAgent[]>> {
-        return this.http.get<ApiResponse<CabinetAgent[]>>(
+    getCabinetAgents(cabinetId: string): Observable<CabinetAgent[]> {
+        return this.http.get<CabinetAgent[]>(
             `${this.apiUrl}/${cabinetId}/agents`, this.httpOptions
         );
     }
@@ -181,9 +180,9 @@ export class CabinetService {
      * @param id
      * @returns
      */
-    getCabinetsByNotary(id: string): Observable<ApiResponse<Cabinet[]>> {
-        return this.http.get<ApiResponse<Cabinet[]>>(
-            `${this.apiUrl}/by-notary/${id}`, this.httpOptions
+    getCabinetsByNotary(id: string): Observable<Cabinet> {
+        return this.http.get<Cabinet>(
+            `${this.apiUrl}/by-notary${id}`, this.httpOptions
         );
     }
 }
