@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MainLayoutComponent } from '../../../core/layouts/main-layout/main-layout.component';
 import { CreateDossierTypeModalComponent } from '../../../shared/components/settings/dossier-type/create-dossier-type-modal/create-dossier-type-modal.component';
-import { CreateDocumentTypeModalComponent } from '../../../shared/components/settings/dossier-type/create-document-type-modal/create-document-type-modal.component';
-import { DeleteConfirmationModalComponent } from '../../../shared/components/settings/dossier-type/delete-confirmation-modal/delete-confirmation-modal.component';
+import { AddRequiredDocumentModalComponent } from '../../../shared/components/settings/dossier-type/create-document-type-modal/create-document-type-modal.component';import { DeleteConfirmationModalComponent } from '../../../shared/components/settings/dossier-type/delete-confirmation-modal/delete-confirmation-modal.component';
 import { NotificationModalComponent, NotificationData } from '../../../shared/ui/notification-modal2/notification-modal2.component';
-import { DossierTypesService } from '../../../core/services/settings/dossier-types.service';
-import { DossierType } from '../../../shared/interfaces/dossier-type.interface';
-import { DocumentType } from '../../../shared/interfaces/dossier-type.interface'; // Ensure this is imported
+import { CaseTypeService } from '../../../core/services/case-type.service';
+import { CaseType, CaseTypeRequest } from '../../../shared/interfaces/models.interface';
+import { RequiredDocument } from '../../../shared/interfaces/models.interface';
 import { DocumentListModalComponent } from '../../../shared/components/settings/dossier-type/document-list-modal/document-list-modal.component';
 
 @Component({
@@ -18,8 +17,9 @@ import { DocumentListModalComponent } from '../../../shared/components/settings/
     CommonModule,
     FormsModule,
     MainLayoutComponent,
+    ReactiveFormsModule,
     CreateDossierTypeModalComponent,
-    CreateDocumentTypeModalComponent,
+    AddRequiredDocumentModalComponent, // Updated
     DeleteConfirmationModalComponent,
     NotificationModalComponent,
     DocumentListModalComponent
@@ -58,7 +58,7 @@ import { DocumentListModalComponent } from '../../../shared/components/settings/
                <input
                  type="text"
                  [(ngModel)]="searchTerm"
-                 (input)="filterDossierTypes()"
+                 (input)="filterCaseTypes()"
                  placeholder="Rechercher un type de dossier..."
                  class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
              </div>
@@ -74,18 +74,21 @@ import { DocumentListModalComponent } from '../../../shared/components/settings/
 
            <!-- Dossier Types List -->
            <div *ngIf="!isLoading" class="space-y-4">
-             <div *ngFor="let dossierType of filteredDossierTypes; trackBy: trackByDossierType" 
+             <div *ngFor="let caseType of filteredCaseTypes; trackBy: trackByCaseType" 
                   class="flex items-center justify-between bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                
                <div class="flex-1">
-                 <h3 class="text-lg font-medium text-gray-900">{{ dossierType.nom }}</h3>
-                 <p *ngIf="dossierType.description" class="text-sm text-gray-600 mt-1">{{ dossierType.description }}</p>
+                 <h3 class="text-lg font-medium text-gray-900">{{ caseType.name }}</h3>
+               </div>
+
+               <div class="flex-1">
+                 <p class="text-sm text-gray-600">{{ getRequiredDocumentNames(caseType) }}</p>
                </div>
    
                <div class="flex items-center space-x-2 ml-4">
                  <!-- View Documents Button -->
                  <button
-                   (click)="viewDocuments(dossierType)"
+                   (click)="viewDocuments(caseType)"
                    class="p-2 rounded-full bg-gray-100"
                    title="Voir les documents">
                    <svg width="21" height="20" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -93,12 +96,11 @@ import { DocumentListModalComponent } from '../../../shared/components/settings/
                     </svg>
                  </button>
 
-                 <!-- Duplicate Button -->
+                 <!-- Add Document Button -->
                  <button
-                   (click)="openDocumentModal(dossierType)"
-                   [disabled]="isDuplicating === dossierType.id"
-                   class="p-2 rounded-full bg-blue-100 disabled:opacity-50"
-                   title="Dupliquer">
+                   (click)="openAddDocumentModal(caseType)"
+                   class="p-2 rounded-full bg-blue-100"
+                   title="Ajouter document requis">
                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <g clip-path="url(#clip0_150_3914)">
                       <path d="M12.845 0.833008H2.5V19.1663H11.5633C10.8494 18.2526 10.4475 17.1339 10.4168 15.9747C10.3861 14.8155 10.7282 13.6771 11.3928 12.7269C12.0574 11.7766 13.0094 11.0648 14.1087 10.6959C15.2081 10.3271 16.3968 10.3208 17.5 10.678V5.48801L12.845 0.833008ZM12.0833 6.24967V2.49967L15.8333 6.24967H12.0833Z" fill="#2563EB"/>
@@ -114,7 +116,7 @@ import { DocumentListModalComponent } from '../../../shared/components/settings/
 
                  <!-- Edit Button -->
                  <button
-                   (click)="openEditModal(dossierType)"
+                   (click)="openEditModal(caseType)"
                    class="p-2 rounded-full bg-orange-100"
                    title="Modifier">
                    <svg width="15" height="16" viewBox="0 0 15 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -124,7 +126,7 @@ import { DocumentListModalComponent } from '../../../shared/components/settings/
    
                  <!-- Delete Button -->
                  <button
-                   (click)="openDeleteModal(dossierType)"
+                   (click)="openDeleteModal(caseType)"
                    class="p-2 rounded-full bg-red-100"
                    title="Supprimer">
                    <svg width="21" height="20" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -135,7 +137,7 @@ import { DocumentListModalComponent } from '../../../shared/components/settings/
              </div>
    
              <!-- Empty State -->
-             <div *ngIf="filteredDossierTypes.length === 0" class="text-center py-12">
+             <div *ngIf="filteredCaseTypes.length === 0" class="text-center py-12">
                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                </svg>
@@ -162,20 +164,19 @@ import { DocumentListModalComponent } from '../../../shared/components/settings/
       <app-create-dossier-type-modal
         [show]="showCreateModal"
         [isEditMode]="isEditMode"
-        [initialData]="selectedDossierType"
+        [initialData]="selectedCaseType"
         [isLoading]="isSubmitting"
         (cancel)="closeCreateModal()"
-        (submit)="onSubmitDossierType($event)">
+        (submit)="onSubmitCaseType($event)">
       </app-create-dossier-type-modal>
 
-      <app-create-document-type-modal
-        [show]="showDocumentModal"
-        [dossierTypes]="dossierTypes"
-        [selectedDossierTypeId]="selectedDossierTypeForDocument?.id || null"
+      <app-add-required-document-modal
+        [show]="showAddDocumentModal"
+        [selectedCaseTypeId]="selectedCaseTypeForDocument?.id || null"
         [isLoading]="isSubmitting"
-        (cancel)="closeDocumentModal()"
-        (submit)="onSubmitDocument($event)">
-      </app-create-document-type-modal>
+        (cancel)="closeAddDocumentModal()"
+        (submit)="onSubmitRequiredDocument($event)">
+      </app-add-required-document-modal>
 
       <app-delete-confirmation-modal
         [show]="showDeleteModal"
@@ -194,7 +195,7 @@ import { DocumentListModalComponent } from '../../../shared/components/settings/
       <!-- Modal de liste des documents -->
       <app-document-list-modal
         [show]="showDocumentListModal"
-        [dossierType]="selectedDossierTypeForDocument"
+        [caseType]="selectedCaseTypeForDocument"
         [documents]="filteredDocuments"
         (close)="closeDocumentListModal()">
       </app-document-list-modal>
@@ -203,51 +204,48 @@ import { DocumentListModalComponent } from '../../../shared/components/settings/
 })
 export class DossierTypesComponent implements OnInit {
   // Data
-  dossierTypes: DossierType[] = [];
-  filteredDossierTypes: DossierType[] = [];
-  documentTypes: DocumentType[] = []; // Typé correctement
-  filteredDocuments: DocumentType[] = []; // Nouvelle propriété pour les documents filtrés
+  caseTypes: CaseType[] = [];
+  filteredCaseTypes: CaseType[] = [];
+  filteredDocuments: RequiredDocument[] = [];
   searchTerm = '';
 
   // Loading states
   isLoading = false;
   isSubmitting = false;
   isDeleting = false;
-  isDuplicating: string | null = null;
 
   // Modal states
   showCreateModal = false;
-  showDocumentModal = false;
+  showAddDocumentModal = false;
   showDeleteModal = false;
   showDocumentListModal = false;
   isEditMode = false;
 
   // Selected items
-  selectedDossierType: { nom: string; description?: string } | null = null;
-  selectedDossierTypeForEdit: DossierType | null = null;
-  selectedDossierTypeForDelete: DossierType | null = null;
-  selectedDossierTypeForDocument: DossierType | null = null;
+  selectedCaseType: { name: string } | null = null;
+  selectedCaseTypeForEdit: CaseType | null = null;
+  selectedCaseTypeForDelete: CaseType | null = null;
+  selectedCaseTypeForDocument: CaseType | null = null;
 
   // Notifications
   notificationData: NotificationData | null = null;
 
-  constructor(private dossierTypesService: DossierTypesService) { }
+  constructor(private caseTypeService: CaseTypeService) { }
 
   ngOnInit() {
-    this.loadDossierTypes();
-    this.loadDocumentTypes();
+    this.loadCaseTypes();
   }
 
-  trackByDossierType(index: number, item: DossierType): string {
+  trackByCaseType(index: number, item: CaseType): string {
     return item.id;
   }
 
-  private loadDossierTypes() {
+  private loadCaseTypes() {
     this.isLoading = true;
-    this.dossierTypesService.getDossierTypes().subscribe({
-      next: (dossierTypes) => {
-        this.dossierTypes = dossierTypes;
-        this.filterDossierTypes();
+    this.caseTypeService.getAllCaseTypes().subscribe({
+      next: (caseTypes) => {
+        this.caseTypes = caseTypes;
+        this.filterCaseTypes();
         this.isLoading = false;
       },
       error: (error) => {
@@ -258,75 +256,54 @@ export class DossierTypesComponent implements OnInit {
     });
   }
 
-  private loadDocumentTypes() {
-    this.dossierTypesService.getDocumentsByDossierType('1').subscribe({
-      next: (docs) => {
-        this.documentTypes = docs;
-        this.updateFilteredDocuments(); // Mettre à jour les documents filtrés après chargement
-      },
-      error: (error) => {
-        console.error('Erreur lors du chargement des types de documents:', error);
-      }
-    });
-  }
-
-  filterDossierTypes() {
+  filterCaseTypes() {
     if (!this.searchTerm.trim()) {
-      this.filteredDossierTypes = [...this.dossierTypes];
+      this.filteredCaseTypes = [...this.caseTypes];
     } else {
       const term = this.searchTerm.toLowerCase().trim();
-      this.filteredDossierTypes = this.dossierTypes.filter(dt =>
-        dt.nom.toLowerCase().includes(term) ||
-        (dt.description && dt.description.toLowerCase().includes(term))
+      this.filteredCaseTypes = this.caseTypes.filter(ct =>
+        ct.name.toLowerCase().includes(term)
       );
-    }
-  }
-
-  // Méthode pour mettre à jour les documents filtrés en fonction du dossier sélectionné
-  private updateFilteredDocuments() {
-    if (this.selectedDossierTypeForDocument && this.documentTypes) {
-      this.filteredDocuments = this.documentTypes;
-    } else {
-      this.filteredDocuments = [];
     }
   }
 
   // Create Modal Methods
   openCreateModal() {
     this.isEditMode = false;
-    this.selectedDossierType = null;
+    this.selectedCaseType = null;
     this.showCreateModal = true;
   }
 
-  openEditModal(dossierType: DossierType) {
+  openEditModal(caseType: CaseType) {
     this.isEditMode = true;
-    this.selectedDossierType = {
-      nom: dossierType.nom,
-      description: dossierType.description
+    this.selectedCaseType = {
+      name: caseType.name
     };
-    this.selectedDossierTypeForEdit = dossierType;
+    this.selectedCaseTypeForEdit = caseType;
     this.showCreateModal = true;
   }
 
   closeCreateModal() {
     this.showCreateModal = false;
     this.isEditMode = false;
-    this.selectedDossierType = null;
-    this.selectedDossierTypeForEdit = null;
+    this.selectedCaseType = null;
+    this.selectedCaseTypeForEdit = null;
   }
 
-  onSubmitDossierType(data: { nom: string; description?: string }) {
+  onSubmitCaseType(data: { name: string }) {
     this.isSubmitting = true;
 
+    const request: CaseTypeRequest = { name: data.name, requiredDocuments: [] };
+
     const operation = this.isEditMode
-      ? this.dossierTypesService.updateDossierType(this.selectedDossierTypeForEdit!.id, data)
-      : this.dossierTypesService.createDossierType(data);
+      ? this.caseTypeService.updateCaseType(this.selectedCaseTypeForEdit!.id, request)
+      : this.caseTypeService.createCaseType(request);
 
     operation.subscribe({
       next: (result) => {
         this.isSubmitting = false;
         this.closeCreateModal();
-        this.loadDossierTypes();
+        this.loadCaseTypes();
 
         const message = this.isEditMode
           ? 'Type de dossier mis à jour avec succès'
@@ -336,99 +313,87 @@ export class DossierTypesComponent implements OnInit {
       error: (error) => {
         console.error('Erreur lors de la sauvegarde:', error);
         this.isSubmitting = false;
-        this.showNotification('error', error.message || 'Une erreur est survenue');
+        this.showNotification('error', 'Une erreur est survenue');
       }
     });
   }
 
-  // Document Modal Methods
-  openDocumentModal(dossierType: DossierType) {
-    this.selectedDossierTypeForDocument = dossierType;
-    this.updateFilteredDocuments(); // Mettre à jour les documents filtrés
-    this.showDocumentModal = true;
+  // Add Required Document Modal Methods
+  openAddDocumentModal(caseType: CaseType) {
+    this.selectedCaseTypeForDocument = caseType;
+    this.showAddDocumentModal = true;
   }
 
-  closeDocumentModal() {
-    this.showDocumentModal = false;
-    this.selectedDossierTypeForDocument = null;
-    this.updateFilteredDocuments(); // Réinitialiser les documents filtrés
+  closeAddDocumentModal() {
+    this.showAddDocumentModal = false;
+    this.selectedCaseTypeForDocument = null;
   }
 
-  onSubmitDocument(data: any) {
+  onSubmitRequiredDocument(data: { documentName: string }) {
     this.isSubmitting = true;
 
-    this.dossierTypesService.createDocumentType(data).subscribe({
+    this.caseTypeService.addRequiredDocument(this.selectedCaseTypeForDocument!.id, data.documentName).subscribe({
       next: (result) => {
         this.isSubmitting = false;
-        this.closeDocumentModal();
-        this.loadDocumentTypes(); // Recharger les documents après création
-        this.showNotification('success', 'Type de document créé avec succès');
+        this.closeAddDocumentModal();
+        this.loadCaseTypes(); // Reload to update the list
+        this.showNotification('success', 'Document requis ajouté avec succès');
       },
       error: (error) => {
-        console.error('Erreur lors de la création du document:', error);
+        console.error('Erreur lors de l\'ajout du document:', error);
         this.isSubmitting = false;
-        this.showNotification('error', error.message || 'Une erreur est survenue');
+        this.showNotification('error', 'Une erreur est survenue');
       }
     });
   }
 
   // Document List Modal Methods
-  viewDocuments(dossierType: DossierType) {
-    this.selectedDossierTypeForDocument = dossierType;
-    this.updateFilteredDocuments(); // Mettre à jour les documents filtrés
-    this.showDocumentListModal = true;
+  viewDocuments(caseType: CaseType) {
+    this.selectedCaseTypeForDocument = caseType;
+    this.caseTypeService.getRequiredDocuments(caseType.id).subscribe({
+      next: (docs) => {
+        this.filteredDocuments = docs;
+        this.showDocumentListModal = true;
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des documents:', error);
+        this.showNotification('error', 'Erreur lors du chargement des documents');
+      }
+    });
   }
 
   closeDocumentListModal() {
     this.showDocumentListModal = false;
-    this.selectedDossierTypeForDocument = null;
-    this.updateFilteredDocuments(); // Réinitialiser les documents filtrés
+    this.selectedCaseTypeForDocument = null;
+    this.filteredDocuments = [];
   }
 
   // Delete Modal Methods
-  openDeleteModal(dossierType: DossierType) {
-    this.selectedDossierTypeForDelete = dossierType;
+  openDeleteModal(caseType: CaseType) {
+    this.selectedCaseTypeForDelete = caseType;
     this.showDeleteModal = true;
   }
 
   closeDeleteModal() {
     this.showDeleteModal = false;
-    this.selectedDossierTypeForDelete = null;
+    this.selectedCaseTypeForDelete = null;
   }
 
   confirmDelete() {
-    if (!this.selectedDossierTypeForDelete) return;
+    if (!this.selectedCaseTypeForDelete) return;
 
     this.isDeleting = true;
-    this.dossierTypesService.deleteDossierType(this.selectedDossierTypeForDelete.id).subscribe({
+    this.caseTypeService.deleteCaseType(this.selectedCaseTypeForDelete.id).subscribe({
       next: () => {
         this.isDeleting = false;
         this.closeDeleteModal();
-        this.loadDossierTypes();
+        this.loadCaseTypes();
         this.showNotification('success', 'Type de dossier supprimé avec succès');
       },
       error: (error) => {
         console.error('Erreur lors de la suppression:', error);
         this.isDeleting = false;
-        this.showNotification('error', error.message || 'Une erreur est survenue');
-      }
-    });
-  }
-
-  // Duplicate Method
-  duplicateDossierType(dossierType: DossierType) {
-    this.isDuplicating = dossierType.id;
-
-    this.dossierTypesService.duplicateDossierType(dossierType.id).subscribe({
-      next: (result) => {
-        this.isDuplicating = null;
-        this.loadDossierTypes();
-        this.showNotification('success', 'Type de dossier dupliqué avec succès');
-      },
-      error: (error) => {
-        console.error('Erreur lors de la duplication:', error);
-        this.isDuplicating = null;
-        this.showNotification('error', error.message || 'Une erreur est survenue');
+        this.showNotification('error', 'Une erreur est survenue');
       }
     });
   }
@@ -440,5 +405,9 @@ export class DossierTypesComponent implements OnInit {
 
   closeNotification() {
     this.notificationData = null;
+  }
+
+  getRequiredDocumentNames(caseType: CaseType): string {
+    return caseType.requiredDocuments.map(rd => rd.documentName).join(', ') || 'Aucun document requis';
   }
 }

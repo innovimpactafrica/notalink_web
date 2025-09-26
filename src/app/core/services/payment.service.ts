@@ -58,6 +58,7 @@ export class PaymentService {
    * @returns
    */
   createPayment(request: PaymentRequest): Observable<Payment> {
+    console.log('Creating payment with request:', request);
     return this.http.post<Payment>(
       this.apiUrl,
       request, 

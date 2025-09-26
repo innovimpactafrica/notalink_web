@@ -9,26 +9,16 @@ import { AlertCardComponent } from '../../shared/components/Dashbord/alert-card/
 import { SignatureCardComponent } from '../../shared/components/Dashbord/signature-card/signature-card.component';
 import { WorkloadCardComponent } from '../../shared/components/Dashbord/workload-card/workload-card.component';
 import { UserService } from '../../core/services/user.service';
+import { CaseFileService } from '../../core/services/case-file.service';
 import { User } from '../../shared/interfaces/user.interface';
+import { CaseFileKPI } from '../../shared/interfaces/models.interface';
+import { forkJoin } from 'rxjs';
 
 interface StatItem {
   label: string;
   value: string;
   icon: string;
   bgColor: string;
-}
-
-interface ChartData {
-  label: string;
-  value: number;
-  color: string;
-  percentage: string;
-}
-
-interface PaymentData {
-  label: string;
-  value: string;
-  period?: string;
 }
 
 interface AlertItem {
@@ -75,57 +65,83 @@ interface WelcomeData {
     SignatureCardComponent,
     WorkloadCardComponent
   ],
-  templateUrl: './dashboard.component.html',
+  template: `
+    <app-main-layout [pageTitle]="'Tableau de bord'">
+      <!-- Dashboard Content -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 w-7xl mx-auto">
+        <!-- Welcome Card - Spans full width on small screens, 2 columns on larger -->
+        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
+          <app-welcome-card
+            [userName]="welcomeData.userName"
+            [date]="welcomeData.date"
+            [location]="welcomeData.location"
+            [stats]="welcomeData.stats">
+          </app-welcome-card>
+        </div>
+
+        <!-- Chart Card - 1 column on small, full width on mobile -->
+        <div class="col-span-1 sm:col-span-1 lg:col-span-2">
+          <app-chart-card [title]="'Répartition des dossiers (%)'"></app-chart-card>
+        </div>
+
+        <!-- Documents Chart - 1 column on small, full width on mobile -->
+        <div class="col-span-1 sm:col-span-1 lg:col-span-2">
+          <app-stat-card [title]="'Documents'"></app-stat-card>
+        </div>
+
+        <!-- Payments Card - Spans full width -->
+        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
+          <app-payment-card [title]="'Paiements'"></app-payment-card>
+        </div>
+
+        <!-- Alert Card (Documents) -->
+        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
+          <app-alert-card
+            [title]="alertsData.documentsTitle"
+            [type]="'document'">
+          </app-alert-card>
+        </div>
+
+        <!-- Alert Card (Messages) -->
+        <!-- <div class="col-span-1 sm:col-span-1 lg:col-span-2">
+          <app-alert-card
+            [title]="alertsData.messagesTitle"
+            [type]="'message'">
+          </app-alert-card>
+        </div> -->
+
+        <!-- Signature Card -->
+        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
+          <app-signature-card
+            [title]="signaturesData.title">
+          </app-signature-card>
+        </div>
+
+        <!-- Workload Card -->
+        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
+          <app-workload-card
+            [title]="workloadData.title">
+          </app-workload-card>
+        </div>
+      </div>
+    </app-main-layout>
+  `,
 })
 export class DashboardComponent implements OnInit {
-  
   private readonly userService = inject(UserService);
-  
+  private readonly caseFileService = inject(CaseFileService);
+
   // Données dynamiques pour l'utilisateur connecté
   welcomeData: WelcomeData = {
     userName: '',
     date: this.getCurrentDate(),
     location: '',
     stats: [
-      { label: 'Total dossiers', value: '100', icon: 'images/dossier.svg', bgColor: 'bg-yellow-100' },
-      { label: 'Total clients', value: '48', icon: 'images/users.svg', bgColor: 'bg-blue-100' },
-      { label: 'Dossiers ouverts', value: '75', icon: 'images/dossier_open.svg', bgColor: 'bg-green-100' },
-      { label: 'Dossiers clôturés', value: '20', icon: 'images/dossier_success.svg', bgColor: 'bg-purple-100' }
+      { label: 'Total dossiers', value: '0', icon: 'images/dossier.svg', bgColor: 'bg-yellow-100' },
+      { label: 'Total clients', value: '0', icon: 'images/users.svg', bgColor: 'bg-blue-100' },
+      { label: 'Dossiers ouverts', value: '0', icon: 'images/dossier_open.svg', bgColor: 'bg-green-100' },
+      { label: 'Dossiers clôturés', value: '0', icon: 'images/dossier_success.svg', bgColor: 'bg-purple-100' }
     ]
-  };
-
-  // Données statiques (inchangées)
-  chartData = {
-    title: 'Répartition des dossiers (%)',
-    period: 'Ce mois',
-    data: [
-      { label: 'Ouvert', value: 40, color: '#3B82F6', percentage: '40%' },
-      { label: 'Traitement en cours', value: 25, color: '#8B5CF6', percentage: '25%' },
-      { label: 'En attente', value: 10, color: '#F59E0B', percentage: '10%' },
-      { label: 'Terminé et clôturé', value: 20, color: '#10B981', percentage: '20%' },
-      { label: 'Annulé', value: 5, color: '#EF4444', percentage: '5%' }
-    ] as ChartData[]
-  };
-
-  documentsData = {
-    title: 'Documents',
-    period: 'Ce mois',
-    data: [
-      { label: 'Total', value: 280 },
-      { label: 'En attente de signature', value: 60 },
-      { label: 'Signé', value: 200 },
-      { label: 'Pas de signature requise', value: 20 }
-    ]
-  };
-
-  paymentsData = {
-    title: 'Paiements',
-    data: [
-      { label: 'Montant encaissé', value: '15 250 F CFA', period: 'Ce mois' },
-      { label: 'Montant en attente', value: '4 250 F CFA' },
-      { label: 'Factures Payées', value: '58' },
-      { label: 'Factures Impayées', value: '12' }
-    ] as PaymentData[]
   };
 
   alertsData = {
@@ -208,17 +224,28 @@ export class DashboardComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.loadCurrentUser();
+    this.loadCurrentUserAndKPI();
   }
 
-  private loadCurrentUser(): void {
-    this.userService.getCurrentUser().subscribe({
-      next: (user: User) => {
-        this.updateWelcomeDataWithUser(user);
+  private loadCurrentUserAndKPI(): void {
+    this.userService.getCabinetIdOfCurrentUser().subscribe({
+      next: (cabinetId) => {
+        forkJoin({
+          user: this.userService.getCurrentUser(),
+          caseKpi: this.caseFileService.getCabinetCaseFileKPI(cabinetId)
+        }).subscribe({
+          next: ({ user, caseKpi }) => {
+            this.updateWelcomeDataWithUser(user);
+            this.updateWelcomeDataWithKPI(caseKpi);
+          },
+          error: (error) => {
+            console.error('Erreur lors du chargement des données:', error);
+            this.setDefaultWelcomeData();
+          }
+        });
       },
       error: (error) => {
-        console.error('Erreur lors du chargement de l\'utilisateur:', error);
-        // En cas d'erreur, on garde les valeurs par défaut
+        console.error('Erreur lors du chargement de l\'ID du cabinet:', error);
         this.setDefaultWelcomeData();
       }
     });
@@ -232,10 +259,24 @@ export class DashboardComponent implements OnInit {
     };
   }
 
+  private updateWelcomeDataWithKPI(kpi: CaseFileKPI): void {
+    const totalCaseFiles = typeof kpi?.totalCaseFiles === 'number' ? kpi.totalCaseFiles : 0;
+    const totalClients = typeof kpi?.totalClients === 'number' ? kpi.totalClients : 0;
+    const openCases = typeof kpi?.openCases === 'number' ? kpi.openCases : 0;
+    const closedCases = typeof kpi?.closedCases === 'number' ? kpi.closedCases : 0;
+
+    this.welcomeData = {
+      ...this.welcomeData,
+      stats: [
+        { label: 'Total dossiers', value: totalCaseFiles.toString(), icon: 'images/dossier.svg', bgColor: 'bg-yellow-100' },
+        { label: 'Total clients', value: totalClients.toString(), icon: 'images/users.svg', bgColor: 'bg-blue-100' },
+        { label: 'Dossiers ouverts', value: openCases.toString(), icon: 'images/dossier_open.svg', bgColor: 'bg-green-100' },
+        { label: 'Dossiers clôturés', value: closedCases.toString(), icon: 'images/dossier_success.svg', bgColor: 'bg-purple-100' }
+      ]
+    };
+  }
+
   private formatUserName(user: User): string {
-    if (user.profil && user.profil.toLowerCase() === 'notaire') {
-      return `Me ${user.prenom} ${user.nom}`;
-    }
     return `${user.prenom} ${user.nom}`;
   }
 
@@ -243,7 +284,13 @@ export class DashboardComponent implements OnInit {
     this.welcomeData = {
       ...this.welcomeData,
       userName: 'Utilisateur',
-      location: 'Cabinet Notarial'
+      location: 'Cabinet Notarial',
+      stats: [
+        { label: 'Total dossiers', value: '0', icon: 'images/dossier.svg', bgColor: 'bg-yellow-100' },
+        { label: 'Total clients', value: '0', icon: 'images/users.svg', bgColor: 'bg-blue-100' },
+        { label: 'Dossiers ouverts', value: '0', icon: 'images/dossier_open.svg', bgColor: 'bg-green-100' },
+        { label: 'Dossiers clôturés', value: '0', icon: 'images/dossier_success.svg', bgColor: 'bg-purple-100' }
+      ]
     };
   }
 

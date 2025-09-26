@@ -80,7 +80,7 @@ export class MeetingService {
 
   /**
    * Récupérer les réunions à venir pour un client
-   * GET /meetings/upcomming/client/{clientId}
+   * GET /meetings/upcoming/client/{clientId}
    * @param clientId
    * @param paginationParams
    * @returns
@@ -99,14 +99,14 @@ export class MeetingService {
     }
 
     return this.http.get<PaginatedResponse<Meeting>>(
-      `${this.apiUrl}/upcomming/client/${clientId}`,
+      `${this.apiUrl}/upcoming/client/${clientId}`,
       { ...this.httpOptions ,params }
     );
   }
 
   /**
    * Récupérer les réunions à venir pour un cabinet
-   * GET /meetings/upcomming/cabinet/{cabinetId}
+   * GET /meetings/upcoming/cabinet/{cabinetId}
    * @param cabinetId
    * @param paginationParams 
    * @returns
@@ -125,7 +125,7 @@ export class MeetingService {
     }
 
     return this.http.get<PaginatedResponse<Meeting>>(
-      `${this.apiUrl}/upcomming/cabinet/${cabinetId}`,
+      `${this.apiUrl}/upcoming/cabinet/${cabinetId}`,
       { ...this.httpOptions ,params }
     );
   }

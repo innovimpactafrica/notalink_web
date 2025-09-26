@@ -8,7 +8,9 @@ export interface User {
   lat: number;
   lon: number;
   profil: string;
-  isOnline?: boolean;
+  online?: boolean;
+  activated?: boolean;
+  password?: string;
   maritalStatus?: MaritalStatus;
   photoUrl?: string;
   createdAt?: Date;

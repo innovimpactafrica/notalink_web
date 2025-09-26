@@ -1,3 +1,5 @@
+import { MaritalStatus } from './user.interface';
+
 export enum DocumentStatus {
   PENDING = 'PENDING',
   VALIDATED = 'VALIDATED',
@@ -8,7 +10,7 @@ export enum DocumentStatus {
 export enum PaymentStatus {
   PENDING = 'PENDING',
   COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED',
+  CANCELED = 'CANCELED',
   FAILED = 'FAILED'
 }
 
@@ -25,6 +27,15 @@ export enum CaseFileStatus {
   PENDING = 'PENDING',
   CLOSED = 'CLOSED',
   ARCHIVED = 'ARCHIVED'
+}
+
+export enum PaymentType {
+  NOTARY_FEES = 'NOTARY_FEES',
+  FILE_FEES = 'FILE_FEES',
+  REGISTRATION_FEES = 'REGISTRATION_FEES',
+  TRANSFER_DUTIES = 'TRANSFER_DUTIES',
+  APPRAISAL_FEES = 'APPRAISAL_FEES',
+  OTHER = 'OTHER'
 }
 
 // Document interfaces
@@ -48,7 +59,7 @@ export interface DocumentStatusUpdate {
   documentId: string;
   status: DocumentStatus;
   comment?: string;
-}
+} 
 
 // Payment interfaces
 export interface Payment {
@@ -56,7 +67,8 @@ export interface Payment {
   label: string;
   amount: number;
   type: string;
-  statut: PaymentStatus;
+  status: PaymentStatus;
+  paymentDate: Date;
   caseFileId: string;
   clientId: string;
   createdAt: Date;
@@ -67,17 +79,16 @@ export interface PaymentRequest {
   label: string;
   amount: number;
   type: string;
-  statut: PaymentStatus;
-  caseFileId: string;
-  clientId: string;
+  status: PaymentStatus;
+  caseFileId: number;
+  clientId: number;
 }
 
 export interface PaymentKPI {
-  totalAmount: number;
-  paidAmount: number;
-  pendingAmount: number;
-  overdueAmount: number;
-  totalPayments: number;
+  totalCollected: number;
+  countCompleted: number;
+  totalPending: number;
+  countPending: number;
 }
 
 // Meeting interfaces
@@ -114,7 +125,7 @@ export interface MeetingRequest {
 export interface CaseType {
   id: string;
   name: string;
-  requiredDocuments: string[];
+  requiredDocuments: RequiredDocument[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -130,25 +141,27 @@ export interface RequiredDocument {
   documentName: string;
 }
 
-// Case Produced Document interfaces
 export interface CaseProducedDocument {
-  id: string;
-  title: string;
-  caseFileId: string;
-  file: File | string;
-  documentTypeId: string;
-  status: ProducedDocumentStatus;
-  createdAt: Date;
-  updatedAt: Date;
+  id?: string;
+  filePath?: string;
+  title?: string;
+  status?: ProducedDocumentStatus;
+  sentDate?: string;
+  documentType?: {
+    id?: string;
+    name?: string;
+    description?: string;
+    requiresSignature?: boolean;
+  };
+  caseFileId?: string;
+  documentTypeId?: string;
 }
 
 export interface CaseProducedDocumentType {
-  id: string;
-  name: string;
-  description: string;
-  requiresSignature: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  id?: string;
+  name?: string;
+  description?: string;
+  requiresSignature?: boolean;
 }
 
 export interface CaseProducedDocumentTypeRequest {
@@ -165,11 +178,10 @@ export interface CaseProducedDocumentRequest {
 }
 
 export interface CaseProducedDocumentKPI {
-  totalDocuments: number;
-  draftDocuments: number;
-  pendingSignatures: number;
-  signedDocuments: number;
-  archivedDocuments: number;
+  noSignatureRequired?: number;
+  signed?: number;
+  awaitingSignature?: number;
+  total?: number;
 }
 
 // Case File interfaces
@@ -202,20 +214,18 @@ export interface CaseFileRequest {
 }
 
 export interface CaseFileKPI {
-  totalCases: number;
-  openCases: number;
-  inProgressCases: number;
-  pendingCases: number;
-  closedCases: number;
-  archivedCases: number;
+  totalCaseFiles?: number;
+  totalClients?: number;
+  openCases?: number;
+  closedCases?: number;
 }
 
 export interface CaseFilePercentageKPI {
-  openPercentage: number;
-  inProgressPercentage: number;
-  pendingPercentage: number;
-  closedPercentage: number;
-  archivedPercentage: number;
+  OPEN?: number;
+  IN_PROGRESS?: number;
+  ON_HOLD?: number;
+  CLOSED?: number;
+  CANCELLED?: number;
 }
 
 // Cabinet interfaces
@@ -248,6 +258,9 @@ export interface CabinetRequest {
 
 export interface CabinetAgent {
   id: string;
+  nom: string;
+  prenom: string;
+  maritalStatus: MaritalStatus | undefined;
   cabinetId: string;
   agentId: string;
   joinedAt: Date;

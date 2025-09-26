@@ -49,29 +49,6 @@ export class UserService {
   }
 
   /**
-   * Récupérer les utilisateurs d'un cabinet
-   * GET /user/cabinet/{cabinetId}
-   * @param cabinetId
-   * @param paginationParams
-   * @returns
-   */
-  getUsersByCabinet(cabinetId: string, paginationParams?: { page?: number; size?: number }): Observable<User[]> {
-    let params = new HttpParams();
-    if (paginationParams?.page) {
-      params = params.set('page', paginationParams.page.toString());
-    }
-    if (paginationParams?.size) {
-      params = params.set('size', paginationParams.size.toString());
-    }
-    return this.http.get<PaginatedResponse<User>>(
-      `${this.baseUrl}/cabinet/${cabinetId}`,
-      { ...this.httpOptions, params }
-    ).pipe(
-      map(response => response.content)
-    );
-  }
-
-  /**
    * Mettre à jour un utilisateur
    * PUT /user/update/{id}
    * @param id 

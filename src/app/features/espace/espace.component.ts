@@ -6,12 +6,14 @@ import { InformationsGeneralesComponent } from '../../shared/components/espace/i
 import { DocumentsJustificatifsComponent } from '../../shared/components/espace/documents-justificatifs/documents-justificatifs.component';
 import { RessourcesHumainesComponent } from '../../shared/components/espace/ressources-humaines/ressources-humaines.component';
 import { EmployeModalComponent } from '../../shared/components/espace/employe-modal/employe-modal.component';
-import { NotaireService } from '../../core/services/notaire/notaire.service';
 import { UserService } from '../../core/services/user.service';
 import { UserDocumentService } from '../../core/services/user-document.service';
-import { TabType, Employe } from '../../shared/interfaces/notaire.interface';
+import { AuthService } from '../../core/services/auth.service';
+import { CabinetService } from '../../core/services/cabinet.service';
+import { TabType } from '../../shared/interfaces/notaire.interface';
 import { User, UpdateUserRequest } from '../../shared/interfaces/user.interface';
 import { UserDocument } from '../../shared/interfaces/models.interface';
+import { SignUpRequest } from '../../shared/interfaces/auth.interface';
 
 @Component({
   selector: 'app-espace',
@@ -33,7 +35,7 @@ import { UserDocument } from '../../shared/interfaces/models.interface';
           <div class="flex flex-col space-y-1">
             <button
               *ngFor="let tab of tabs"
-              (click)="activeTab = tab.id"
+              (click)="setActiveTab(tab.id)"
               [ngClass]="getTabClasses(tab.id)"
               class="flex items-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,6 +63,7 @@ import { UserDocument } from '../../shared/interfaces/models.interface';
 
           <app-ressources-humaines
             *ngIf="activeTab === 'ressources'"
+            [agents]="agents"
             (employeAdded)="onAddEmploye()"
             (employeEdited)="onEditEmploye($event)"
             (employeDeleted)="onDeleteEmploye($event)"
@@ -107,6 +110,8 @@ export class EspaceComponent implements OnInit {
   activeTab: TabType = 'informations';
   currentUser: User | null = null;
   userDocuments: UserDocument[] = [];
+  agents: User[] = [];
+  cabinetId: string | null = null;
   
   tabs = [
     {
@@ -128,7 +133,7 @@ export class EspaceComponent implements OnInit {
 
   // Modal et notification states
   showEmployeModal = false;
-  selectedEmploye: Employe | null = null;
+  selectedEmploye: User | null = null;
   showNotification = false;
   notificationData: any = {
     status: 'info',
@@ -144,9 +149,10 @@ export class EspaceComponent implements OnInit {
 
   constructor(
     private notificationService: NotificationService,
-    private notaireService: NotaireService,
     private userService: UserService,
-    private userDocumentService: UserDocumentService
+    private userDocumentService: UserDocumentService,
+    private authService: AuthService,
+    private cabinetService: CabinetService
   ) {}
 
   ngOnInit(): void {
@@ -161,6 +167,7 @@ export class EspaceComponent implements OnInit {
 
     // Récupérer les données de l'utilisateur connecté
     this.loadCurrentUser();
+    this.loadCabinet();
   }
 
   private loadCurrentUser(): void {
@@ -178,6 +185,47 @@ export class EspaceComponent implements OnInit {
         console.error('Erreur lors de la récupération de l\'utilisateur:', error);
       }
     });
+  }
+
+  private loadCabinet(): void {
+    this.userService.getCabinetOfCurrentUser().subscribe({
+      next: (cabinet) => {
+        this.cabinetId = cabinet.id;
+      },
+      error: (error) => {
+        this.showErrorNotification(
+          'Erreur',
+          'Impossible de charger le cabinet.'
+        );
+        console.error('Erreur lors de la récupération du cabinet:', error);
+      }
+    });
+  }
+
+  private loadAgents(): void {
+    if (!this.cabinetId) {
+      return;
+    }
+
+    this.cabinetService.getCabinetAgents(this.cabinetId).subscribe({
+      next: (users: any[]) => {
+        this.agents = users;
+      },
+      error: (error) => {
+        this.showErrorNotification(
+          'Erreur',
+          'Impossible de charger les agents.'
+        );
+        console.error('Erreur lors de la récupération des agents:', error);
+      }
+    });
+  }
+
+  setActiveTab(id: TabType): void {
+    this.activeTab = id;
+    if (id === 'ressources' && this.cabinetId) {
+      this.loadAgents();
+    }
   }
 
   private loadUserDocuments(userId: string): void {
@@ -242,12 +290,12 @@ export class EspaceComponent implements OnInit {
     this.showEmployeModal = true;
   }
 
-  onEditEmploye(employe: Employe): void {
+  onEditEmploye(employe: User): void {
     this.selectedEmploye = employe;
     this.showEmployeModal = true;
   }
 
-  onDeleteEmploye(employe: Employe): void {
+  onDeleteEmploye(employe: User): void {
     this.pendingAction = { type: 'delete', data: employe };
     this.showConfirmationModal(
       'Suppression',
@@ -257,12 +305,12 @@ export class EspaceComponent implements OnInit {
     );
   }
 
-  onEmployeStatusChanged(event: {employe: Employe, action: string}): void {
+  onEmployeStatusChanged(event: {employe: User, action: string}): void {
     const { employe, action } = event;
     this.pendingAction = { type: 'toggle-status', data: employe };
     
     const actionText = action === 'activer' ? 'activer' : 'désactiver';
-    const actionButtonText = action === 'activer' ? 'Activer' : 'Désactiver';
+    const actionButtonText = actionText.charAt(0).toUpperCase() + actionText.slice(1);
     
     this.showConfirmationModal(
       'Confirmation',
@@ -277,21 +325,87 @@ export class EspaceComponent implements OnInit {
     this.selectedEmploye = null;
   }
 
-  onEmployeSaved(employe: Employe): void {
+  onEmployeSaved(employe: User): void {
     if (this.selectedEmploye) {
       // Mode édition
-      this.notaireService.updateEmploye(this.selectedEmploye.id, employe);
-      this.showSuccessNotification(
-        'Employé modifié',
-        `Les informations de ${employe.prenom} ${employe.nom} ont été mises à jour.`
-      );
+      const updateData: UpdateUserRequest = {
+        nom: employe.nom,
+        prenom: employe.prenom,
+        email: employe.email,
+        telephone: employe.telephone || '',
+        profil: employe.profil as string,
+        adress: employe.adress || '',
+        lat: employe.lat || 0,
+        lon: employe.lon || 0,
+        password: employe.password || ''
+      };
+      this.userService.updateUser(this.selectedEmploye.id, updateData).subscribe({
+        next: (updatedUser: User) => {
+          console.log(updateData);
+          this.showSuccessNotification(
+            'Employé modifié',
+            `Les informations de ${employe.prenom} ${employe.nom} ont été mises à jour.`
+          );
+          this.loadAgents();
+        },
+        error: (error) => {
+          this.showErrorNotification(
+            'Erreur',
+            'Une erreur est survenue lors de la mise à jour.'
+          );
+          console.error('Erreur lors de la mise à jour de l\'employé:', error);
+        }
+      });
     } else {
       // Mode création
-      this.notaireService.addEmploye(employe);
-      this.showSuccessNotification(
-        'Employé ajouté',
-        `${employe.prenom} ${employe.nom} a été ajouté à l'équipe.`
-      );
+      const signUpData: SignUpRequest = {
+        nom: employe.nom,
+        prenom: employe.prenom,
+        email: employe.email,
+        password: '',
+        telephone: employe.telephone || '',
+        adress: '',
+        lat: 0,
+        lon: 0,
+        profil: employe.profil as string,
+      };
+      this.authService.signUp(signUpData).subscribe({
+        next: (authResponse) => {
+          console.log(authResponse);
+          const newUser = authResponse;  
+          console.log(newUser);        
+          if (this.cabinetId && newUser.id) {
+            this.cabinetService.addAgentToCabinet(this.cabinetId, newUser.id).subscribe({
+              next: () => {
+                this.showSuccessNotification(
+                  'Employé ajouté',
+                  `${employe.prenom} ${employe.nom} a été ajouté à l'équipe.`
+                );
+                this.loadAgents();
+              },
+              error: (error) => {
+                this.showErrorNotification(
+                  'Erreur',
+                  'Erreur lors de l\'ajout au cabinet.'
+                );
+                console.error('Erreur lors de l\'ajout au cabinet:', error);
+              }
+            });
+          } else {
+            this.showErrorNotification(
+              'Erreur',
+              'Cabinet ID manquant.'
+            );
+          }
+        },
+        error: (error) => {
+          this.showErrorNotification(
+            'Erreur',
+            'Une erreur est survenue lors de la création.'
+          );
+          console.error('Erreur lors de la création de l\'employé:', error);
+        }
+      });
     }
     this.showEmployeModal = false;
     this.selectedEmploye = null;
@@ -351,21 +465,48 @@ export class EspaceComponent implements OnInit {
     if (this.pendingAction && action === 'primary') {
       switch (this.pendingAction.type) {
         case 'delete':
-          this.notaireService.deleteEmploye(this.pendingAction.data.id);
-          this.showSuccessNotification(
-            'Employé supprimé',
-            `${this.pendingAction.data.prenom} ${this.pendingAction.data.nom} a été supprimé.`
-          );
+          if (this.cabinetId) {
+            this.cabinetService.removeAgentFromCabinet(this.cabinetId, this.pendingAction.data.id).subscribe({
+              next: () => {
+                this.showSuccessNotification(
+                  'Employé supprimé',
+                  `${this.pendingAction?.data.prenom} ${this.pendingAction?.data.nom} a été supprimé.`
+                );
+                this.loadAgents();
+              },
+              error: (error) => {
+                this.showErrorNotification(
+                  'Erreur',
+                  'Erreur lors de la suppression.'
+                );
+                console.error('Erreur lors de la suppression de l\'employé:', error);
+              }
+            });
+          }
           break;
         
-        case 'toggle-status':
-          this.notaireService.toggleEmployeStatus(this.pendingAction.data.id);
-          const newStatus = this.pendingAction.data.statut === 'actif' ? 'désactivé' : 'activé';
-          this.showSuccessNotification(
-            'Statut modifié',
-            `L'employé ${this.pendingAction.data.prenom} ${this.pendingAction.data.nom} a été ${newStatus}.`
-          );
-          break;
+        // case 'toggle-status':
+        //   const employe = this.pendingAction.data as User;
+        //   const newActivated = !employe.activated;
+        //   const updateData: UpdateUserRequest = { activated: newActivated };
+        //   this.userService.updateUser(employe.id, updateData).subscribe({
+        //     next: (updatedUser: User) => {
+        //       const statusText = newActivated ? 'activé' : 'désactivé';
+        //       this.showSuccessNotification(
+        //         'Statut modifié',
+        //         `L'employé ${employe.prenom} ${employe.nom} a été ${statusText}.`
+        //       );
+        //       this.loadAgents();
+        //     },
+        //     error: (error) => {
+        //       this.showErrorNotification(
+        //         'Erreur',
+        //         'Erreur lors de la modification du statut.'
+        //       );
+        //       console.error('Erreur lors de la modification du statut:', error);
+        //     }
+        //   });
+        //   break;
       }
     }
     
