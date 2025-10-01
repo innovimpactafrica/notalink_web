@@ -1,7 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment.prod';
 import { 
   Meeting, 
   MeetingRequest,
@@ -10,17 +8,14 @@ import {
 import { 
   PaginatedResponse,
 } from '../../shared/interfaces/api-response.interface';
-
+import { ApiService } from './api.service';
+import { APP_CONSTANTS } from '../../shared/constants/app.constants';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MeetingService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/meetings`;
-  private readonly httpOptions = {
-    withCredentials: true,
-  };
+  private readonly apiService = inject(ApiService);
 
   /**
    * Récupérer une réunion par ID
@@ -29,9 +24,9 @@ export class MeetingService {
    * @returns
    */
   getMeetingById(id: string): Observable<Meeting> {
-    return this.http.get<Meeting>(
-      `${this.apiUrl}/${id}`, 
-      this.httpOptions
+    return this.apiService.get<Meeting>(
+      APP_CONSTANTS.API_ENDPOINTS.MEETING.BY_ID,
+      { id }
     );
   }
 
@@ -45,10 +40,10 @@ export class MeetingService {
     id: string, 
     request: MeetingRequest
   ): Observable<Meeting> {
-    return this.http.put<Meeting>(
-      `${this.apiUrl}/${id}`,
-      request, 
-      this.httpOptions
+    return this.apiService.put<Meeting>(
+      APP_CONSTANTS.API_ENDPOINTS.MEETING.UPDATE,
+      request,
+      { id }
     );
   }
 
@@ -59,9 +54,9 @@ export class MeetingService {
    * @returns
    */
   deleteMeeting(id: string): Observable<void> {
-    return this.http.delete<void>(
-      `${this.apiUrl}/${id}`, 
-      this.httpOptions
+    return this.apiService.delete<void>(
+      APP_CONSTANTS.API_ENDPOINTS.MEETING.DELETE,
+      { id }
     );
   }
 
@@ -71,10 +66,9 @@ export class MeetingService {
    * @returns
    */
   createMeeting(request: MeetingRequest): Observable<Meeting> {
-    return this.http.post<Meeting>(
-      this.apiUrl,
-      request, 
-      this.httpOptions
+    return this.apiService.post<Meeting>(
+      APP_CONSTANTS.API_ENDPOINTS.MEETING.CREATE,
+      request
     );
   }
 
@@ -89,18 +83,9 @@ export class MeetingService {
     clientId: string, 
     paginationParams?: PaginationParams
   ): Observable<PaginatedResponse<Meeting>> {
-    let params = new HttpParams();
-    
-    if (paginationParams?.page) {
-      params = params.set('page', paginationParams.page.toString());
-    }
-    if (paginationParams?.size) {
-      params = params.set('size', paginationParams.size.toString());
-    }
-
-    return this.http.get<PaginatedResponse<Meeting>>(
-      `${this.apiUrl}/upcoming/client/${clientId}`,
-      { ...this.httpOptions ,params }
+    return this.apiService.get<PaginatedResponse<Meeting>>(
+      APP_CONSTANTS.API_ENDPOINTS.MEETING.UPCOMING_BY_CLIENT,
+      { clientId, ...paginationParams }
     );
   }
 
@@ -115,18 +100,9 @@ export class MeetingService {
     cabinetId: string, 
     paginationParams?: PaginationParams
   ): Observable<PaginatedResponse<Meeting>> {
-    let params = new HttpParams();
-    
-    if (paginationParams?.page) {
-      params = params.set('page', paginationParams.page.toString());
-    }
-    if (paginationParams?.size) {
-      params = params.set('size', paginationParams.size.toString());
-    }
-
-    return this.http.get<PaginatedResponse<Meeting>>(
-      `${this.apiUrl}/upcoming/cabinet/${cabinetId}`,
-      { ...this.httpOptions ,params }
+    return this.apiService.get<PaginatedResponse<Meeting>>(
+      APP_CONSTANTS.API_ENDPOINTS.MEETING.UPCOMING_BY_CABINET,
+      { cabinetId, ...paginationParams }
     );
   }
 
@@ -137,9 +113,9 @@ export class MeetingService {
    * @returns
    */
   getNextMeetingByCabinet(cabinetId: string): Observable<Meeting> {
-    return this.http.get<Meeting>(
-      `${this.apiUrl}/next/cabinet/${cabinetId}`, 
-      this.httpOptions
+    return this.apiService.get<Meeting>(
+      APP_CONSTANTS.API_ENDPOINTS.MEETING.NEXT_BY_CABINET,
+      { cabinetId }
     );
   }
 
@@ -154,11 +130,9 @@ export class MeetingService {
     clientId: string, 
     date: string
   ): Observable<Meeting[]> {
-    const params = new HttpParams().set('date', date);
-
-    return this.http.get<Meeting[]>(
-      `${this.apiUrl}/client/${clientId}/date`,
-      { ...this.httpOptions ,params }
+    return this.apiService.get<Meeting[]>(
+      APP_CONSTANTS.API_ENDPOINTS.MEETING.BY_CLIENT_AND_DATE,
+      { clientId, date }
     );
   }
 
@@ -173,11 +147,9 @@ export class MeetingService {
     cabinetId: string, 
     date: string
   ): Observable<Meeting[]> {
-    const params = new HttpParams().set('date', date);
-
-    return this.http.get<Meeting[]>(
-      `${this.apiUrl}/cabinet/${cabinetId}/date`,
-      { ...this.httpOptions ,params }
+    return this.apiService.get<Meeting[]>(
+      APP_CONSTANTS.API_ENDPOINTS.MEETING.BY_CABINET_AND_DATE,
+      { cabinetId, date }
     );
   }
 
@@ -192,18 +164,9 @@ export class MeetingService {
     clientId: string, 
     paginationParams?: PaginationParams
   ): Observable<PaginatedResponse<Meeting>> {
-    let params = new HttpParams();
-    
-    if (paginationParams?.page) {
-      params = params.set('page', paginationParams.page.toString());
-    }
-    if (paginationParams?.size) {
-      params = params.set('size', paginationParams.size.toString());
-    }
-
-    return this.http.get<PaginatedResponse<Meeting>>(
-      `${this.apiUrl}/archived/client/${clientId}`,
-      { ...this.httpOptions ,params }
+    return this.apiService.get<PaginatedResponse<Meeting>>(
+      APP_CONSTANTS.API_ENDPOINTS.MEETING.ARCHIVED_BY_CLIENT,
+      { clientId, ...paginationParams }
     );
   }
 
@@ -218,18 +181,9 @@ export class MeetingService {
     cabinetId: string, 
     paginationParams?: PaginationParams
   ): Observable<PaginatedResponse<Meeting>> {
-    let params = new HttpParams();
-    
-    if (paginationParams?.page) {
-      params = params.set('page', paginationParams.page.toString());
-    }
-    if (paginationParams?.size) {
-      params = params.set('size', paginationParams.size.toString());
-    }
-
-    return this.http.get<PaginatedResponse<Meeting>>(
-      `${this.apiUrl}/archived/cabinet/${cabinetId}`,
-      { ...this.httpOptions ,params }
+    return this.apiService.get<PaginatedResponse<Meeting>>(
+      APP_CONSTANTS.API_ENDPOINTS.MEETING.ARCHIVED_BY_CABINET,
+      { cabinetId, ...paginationParams }
     );
   }
 }

@@ -8,6 +8,7 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { loadingInterceptor } from './core/interceptors/loading.interceptor';
+import { FilePathInterceptor } from './core/interceptors/file-path.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,6 +21,7 @@ export const appConfig: ApplicationConfig = {
         loadingInterceptor // Intercepteur de gestion du chargement
       ])
     ),
-    importProvidersFrom(ReactiveFormsModule) // Importation du module des formulaires réactifs
+    importProvidersFrom(ReactiveFormsModule), // Importation du module des formulaires réactifs
+    FilePathInterceptor,
   ]
 };

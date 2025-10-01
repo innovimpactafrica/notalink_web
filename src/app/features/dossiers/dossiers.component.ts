@@ -41,6 +41,7 @@ export class DossiersComponent implements OnInit {
   showCreateModal = false;
   isLoading = false;
   cabinetId: string | null = null;
+  private searchTimeout: any;
 
   // Pagination
   currentPage = 0;
@@ -175,7 +176,7 @@ export class DossiersComponent implements OnInit {
   }
 
   private async mapCaseFileToDisplayDossier(caseFile: CaseFile): Promise<DisplayDossier> {
-    const typeName = await this.getCaseTypeName(caseFile.caseTypeId);
+    const typeName = caseFile.caseTypeName || await this.getCaseTypeName(caseFile.caseTypeId);
     return {
       id: caseFile.id,
       title: caseFile.title,
@@ -184,10 +185,10 @@ export class DossiersComponent implements OnInit {
       status: caseFile.status,
       createdDate: this.formatDate(caseFile.openingDate),
       lastUpdate: caseFile.reference,
-      client: caseFile.lawyerId,
+      client: this.lawyers.find(lawyer => lawyer.id === caseFile.lawyerId)?.name || 'Avocat inconnu',
       nextAction: 'Prochaine action',
       nextActionDate: this.formatDate(new Date()),
-      progress: this.calculateProgress(caseFile),
+      progress: caseFile.progress || 0,
       color: this.getStatusColor(caseFile.status),
     };
   }
@@ -198,23 +199,6 @@ export class DossiersComponent implements OnInit {
       month: '2-digit',
       day: '2-digit',
     });
-  }
-
-  private calculateProgress(caseFile: CaseFile): number {
-    switch (caseFile.status) {
-      case CaseFileStatus.OPEN:
-        return 10;
-      case CaseFileStatus.IN_PROGRESS:
-        return 50;
-      case CaseFileStatus.PENDING:
-        return 75;
-      case CaseFileStatus.CLOSED:
-        return 100;
-      case CaseFileStatus.ARCHIVED:
-        return 100;
-      default:
-        return 0;
-    }
   }
 
   private getStatusColor(status: CaseFileStatus): string {
@@ -244,6 +228,15 @@ export class DossiersComponent implements OnInit {
       dossier.type.toLowerCase().includes(searchLower);
     const matchesStatus = !this.selectedStatus || dossier.status === this.selectedStatus;
     return matchesSearch && matchesStatus;
+  }
+
+  onSearchInput(): void {
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+    this.searchTimeout = setTimeout(() => {
+      this.applyFilters();
+    }, 300);
   }
 
   applyFilters(): void {

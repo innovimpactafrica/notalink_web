@@ -42,7 +42,7 @@
               <input
                 type="text"
                 [(ngModel)]="searchTerm"
-                (input)="applyFilters()"
+                (ngModelChange)="onSearchInput()"
                 placeholder="Rechercher par titre, référence ou avocat..."
                 class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4B068] focus:border-transparent"
               >
@@ -187,6 +187,9 @@
               (click)="changePage(currentPage - 1)"
               class="px-3 py-1.5 border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
               Précédent
             </button>
             <button
@@ -202,6 +205,9 @@
               (click)="changePage(currentPage + 1)"
               class="px-3 py-1.5 border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
               Suivant
             </button>
           </div>

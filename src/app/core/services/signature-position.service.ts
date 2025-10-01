@@ -1,21 +1,17 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment.prod';
 import { 
   SignaturePosition, 
   SignaturePositionRequest 
 } from '../../shared/interfaces/models.interface';
+import { ApiService } from './api.service';
+import { APP_CONSTANTS } from '../../shared/constants/app.constants';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SignaturePositionService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/documents`;
-  private readonly httpOptions = {
-    withCredentials: true,
-  };
+  private readonly apiService = inject(ApiService);
 
   /**
    * Récupérer les positions de signature d'un document
@@ -24,9 +20,9 @@ export class SignaturePositionService {
    * @returns
    */
   getDocumentSignatures(documentId: string): Observable<SignaturePosition[]> {
-    return this.http.get<SignaturePosition[]>(
-      `${this.apiUrl}/${documentId}/signatures`, 
-      this.httpOptions
+    return this.apiService.get<SignaturePosition[]>(
+      APP_CONSTANTS.API_ENDPOINTS.SIGNATURE_POSITION.GET_BY_DOCUMENT,
+      { documentId }
     );
   }
 
@@ -40,10 +36,10 @@ export class SignaturePositionService {
     documentId: string, 
     request: SignaturePositionRequest
   ): Observable<SignaturePosition> {
-    return this.http.post<SignaturePosition>(
-      `${this.apiUrl}/${documentId}/signatures`,
-      request, 
-      this.httpOptions
+    return this.apiService.post<SignaturePosition>(
+      APP_CONSTANTS.API_ENDPOINTS.SIGNATURE_POSITION.ADD,
+      request,
+      { documentId }
     );
   }
 
@@ -54,9 +50,9 @@ export class SignaturePositionService {
    * @returns
    */
   deleteSignaturePosition(positionId: string): Observable<void> {
-    return this.http.delete<void>(
-      `${this.apiUrl}/signatures/${positionId}`, 
-      this.httpOptions
+    return this.apiService.delete<void>(
+      APP_CONSTANTS.API_ENDPOINTS.SIGNATURE_POSITION.DELETE,
+      { positionId }
     );
   }
 }

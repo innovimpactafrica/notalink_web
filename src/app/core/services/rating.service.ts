@@ -1,7 +1,5 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment.prod';
 import { 
   Rating, 
   RatingRequest, 
@@ -11,22 +9,22 @@ import {
 import {
   PaginatedResponse,
 } from '../../shared/interfaces/api-response.interface';
+import { ApiService } from './api.service';
+import { APP_CONSTANTS } from '../../shared/constants/app.constants';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RatingService {
-  private readonly apiUrl = `${environment.apiUrl}/ratings`;
-
-  constructor(private http: HttpClient) {}
+  private readonly apiService = inject(ApiService);
 
   /**
    * Noter un utilisateur
    * POST /ratings/rate
    */
   rateUser(request: RatingRequest): Observable<Rating> {
-    return this.http.post<Rating>(
-      `${this.apiUrl}/rate`,
+    return this.apiService.post<Rating>(
+      APP_CONSTANTS.API_ENDPOINTS.RATING.RATE,
       request
     );
   }
@@ -39,18 +37,9 @@ export class RatingService {
     userId: string, 
     paginationParams?: PaginationParams
   ): Observable<PaginatedResponse<Rating>> {
-    let params = new HttpParams();
-    
-    if (paginationParams?.page) {
-      params = params.set('page', paginationParams.page.toString());
-    }
-    if (paginationParams?.size) {
-      params = params.set('size', paginationParams.size.toString());
-    }
-
-    return this.http.get<PaginatedResponse<Rating>>(
-      `${this.apiUrl}/user/${userId}`,
-      { params }
+    return this.apiService.get<PaginatedResponse<Rating>>(
+      APP_CONSTANTS.API_ENDPOINTS.RATING.BY_USER,
+      { userId, ...paginationParams }
     );
   }
 
@@ -59,8 +48,9 @@ export class RatingService {
    * GET /ratings/average/{userId}
    */
   getUserAverageRating(userId: string): Observable<RatingAverage> {
-    return this.http.get<RatingAverage>(
-      `${this.apiUrl}/average/${userId}`
+    return this.apiService.get<RatingAverage>(
+      APP_CONSTANTS.API_ENDPOINTS.RATING.AVERAGE,
+      { userId }
     );
   }
 }

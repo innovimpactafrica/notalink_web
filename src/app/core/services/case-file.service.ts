@@ -1,7 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import { environment } from '../../../environments/environment.prod';
 import { 
   CaseFile, 
   CaseFileRequest, 
@@ -11,26 +9,24 @@ import {
   PaginationParams
 } from '../../shared/interfaces/models.interface';
 import { PaginatedResponse } from '../../shared/interfaces/api-response.interface';
+import { ApiService } from './api.service';
+import { APP_CONSTANTS } from '../../shared/constants/app.constants';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CaseFileService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/case-files`;
-  private readonly httpOptions = {
-    withCredentials: true,
-  };
+  private readonly apiService = inject(ApiService);
 
   /**
    * Mettre à jour un dossier
    * PUT /case-files/{id}
    */
   updateCaseFile(id: string, request: CaseFileRequest): Observable<CaseFile> {
-    return this.http.put<CaseFile>(
-      `${this.apiUrl}/${id}`,
+    return this.apiService.put<CaseFile>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_FILE.UPDATE,
       request,
-      this.httpOptions
+      { id }
     );
   }
 
@@ -39,10 +35,9 @@ export class CaseFileService {
    * POST /case-files
    */
   createCaseFile(request: CaseFileRequest): Observable<CaseFile> {
-    return this.http.post<CaseFile>(
-      this.apiUrl,
-      request,
-      this.httpOptions
+    return this.apiService.post<CaseFile>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_FILE.CREATE,
+      request
     );
   }
 
@@ -51,10 +46,10 @@ export class CaseFileService {
    * POST /case-files/{id}/clients/{clientId}
    */
   addClientToCaseFile(id: string, clientId: string): Observable<void> {
-    return this.http.post<void>(
-      `${this.apiUrl}/${id}/clients/${clientId}`,
+    return this.apiService.post<void>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_FILE.ADD_CLIENT,
       null,
-      this.httpOptions
+      { id, clientId }
     );
   }
 
@@ -63,9 +58,9 @@ export class CaseFileService {
    * GET /case-files/kpi/percentage/client/{clientId}
    */
   getClientPercentageKPI(clientId: string): Observable<CaseFilePercentageKPI> {
-    return this.http.get<CaseFilePercentageKPI>(
-      `${this.apiUrl}/kpi/percentage/client/${clientId}`,
-      this.httpOptions
+    return this.apiService.get<CaseFilePercentageKPI>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_FILE.PERCENTAGE_KPI_BY_CLIENT,
+      { clientId }
     );
   }
 
@@ -74,9 +69,9 @@ export class CaseFileService {
    * GET /case-files/kpi/percentage/cabinet/{cabinetId}
    */
   getCabinetPercentageKPI(cabinetId: string): Observable<CaseFilePercentageKPI> {
-    return this.http.get<CaseFilePercentageKPI>(
-      `${this.apiUrl}/kpi/percentage/cabinet/${cabinetId}`,
-      this.httpOptions
+    return this.apiService.get<CaseFilePercentageKPI>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_FILE.PERCENTAGE_KPI_BY_CABINET,
+      { cabinetId }
     );
   }
 
@@ -89,21 +84,9 @@ export class CaseFileService {
     status?: CaseFileStatus, 
     paginationParams?: PaginationParams
   ): Observable<PaginatedResponse<CaseFile>> {
-    let params = new HttpParams();
-    
-    if (status) {
-      params = params.set('status', status);
-    }
-    if (paginationParams?.page) {
-      params = params.set('page', paginationParams.page.toString());
-    }
-    if (paginationParams?.size) {
-      params = params.set('size', paginationParams.size.toString());
-    }
-
-    return this.http.get<PaginatedResponse<CaseFile>>(
-      `${this.apiUrl}/client/${clientId}`,
-      { ...this.httpOptions, params }
+    return this.apiService.get<PaginatedResponse<CaseFile>>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_FILE.BY_CLIENT,
+      { clientId, status, ...paginationParams }
     ).pipe(
       tap(data => console.log('Response Data (client):', data))
     );
@@ -114,9 +97,9 @@ export class CaseFileService {
    * GET /case-files/client/{clientId}/kpi
    */
   getClientCaseFileKPI(clientId: string): Observable<CaseFileKPI> {
-    return this.http.get<CaseFileKPI>(
-      `${this.apiUrl}/client/${clientId}/kpi`,
-      this.httpOptions
+    return this.apiService.get<CaseFileKPI>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_FILE.KPI_BY_CLIENT,
+      { clientId }
     );
   }
 
@@ -129,24 +112,10 @@ export class CaseFileService {
     status?: CaseFileStatus, 
     paginationParams?: PaginationParams
   ): Observable<PaginatedResponse<CaseFile>> {
-    let params = new HttpParams();
-    
-    if (status) {
-      params = params.set('status', status);
-    }
-    if (paginationParams?.page) {
-      params = params.set('page', paginationParams.page.toString());
-    }
-    if (paginationParams?.size) {
-      params = params.set('size', paginationParams.size.toString());
-    }
-
-    const apiRoute = `${this.apiUrl}/cabinet/${cabinetId}`;
-
-    return this.http.get<PaginatedResponse<CaseFile>>(
-      apiRoute,
-      { ...this.httpOptions, params }
-    )
+    return this.apiService.get<PaginatedResponse<CaseFile>>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_FILE.BY_CABINET,
+      { cabinetId, status, ...paginationParams }
+    );
   }
 
   /**
@@ -154,9 +123,9 @@ export class CaseFileService {
    * GET /case-files/cabinet/{cabinetId}/kpi
    */
   getCabinetCaseFileKPI(cabinetId: string): Observable<CaseFileKPI> {
-    return this.http.get<CaseFileKPI>(
-      `${this.apiUrl}/cabinet/${cabinetId}/kpi`,
-      this.httpOptions
+    return this.apiService.get<CaseFileKPI>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_FILE.KPI_BY_CABINET,
+      { cabinetId }
     );
   }
 }

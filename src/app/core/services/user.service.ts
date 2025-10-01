@@ -1,5 +1,4 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import {
@@ -12,114 +11,109 @@ import {
 import {
   PasswordChangeRequest,
 } from '../../shared/interfaces/auth.interface';
-import { environment } from '../../../environments/environment.prod';
+import { ApiService } from './api.service';
 import { CabinetService } from './cabinet.service';
 import { Cabinet } from '../../shared/interfaces/models.interface';
-import { PaginatedResponse } from '../../shared/interfaces/api-response.interface';
+import { APP_CONSTANTS } from '../../shared/constants/app.constants';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private readonly http = inject(HttpClient);
+  private readonly apiService = inject(ApiService);
   private readonly cabinetService = inject(CabinetService);
-  private readonly baseUrl = `${environment.apiUrl}/v1/user`;
-
-  private readonly httpOptions = {
-    withCredentials: true,
-  };
 
   /**
    * Récupérer l'utilisateur courant
-   * GET /user/me
+   * GET /api/v1/user/me
    * @returns 
    */
   getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.baseUrl}/me`, this.httpOptions);
+    return this.apiService.get<User>(APP_CONSTANTS.API_ENDPOINTS.USER.ME);
   }
 
   /**
    * Récupérer un utilisateur par son ID
-   * GET /user/{id}
+   * GET /api/v1/user/{id}
    * @param id 
    * @returns 
    */
   getUserById(id: string): Observable<User> {
-    return this.http.get<User>(`${this.baseUrl}/${id}`, this.httpOptions);
+    return this.apiService.get<User>(APP_CONSTANTS.API_ENDPOINTS.USER.BY_ID, { id });
   }
 
   /**
    * Mettre à jour un utilisateur
-   * PUT /user/update/{id}
+   * PUT /api/v1/user/update/{id}
    * @param id 
    * @param userData 
    * @returns 
    */
   updateUser(id: string, userData: UpdateUserRequest): Observable<User> {
-    return this.http.put<User>(`${this.baseUrl}/update/${id}`, userData, this.httpOptions);
+    return this.apiService.put<User>(APP_CONSTANTS.API_ENDPOINTS.USER.UPDATE, userData, { id });
   }
 
   /**
    * Mettre à jour la localisation d'un utilisateur
-   * PUT /user/{id}/location
+   * PUT /api/v1/user/{id}/location
    * @param userId 
    * @param locationData 
    * @returns 
    */
   updateUserLocation(userId: string, locationData: UpdateLocationRequest): Observable<User> {
-    return this.http.put<User>(`${this.baseUrl}/${userId}/location`, locationData, this.httpOptions);
+    return this.apiService.put<User>(APP_CONSTANTS.API_ENDPOINTS.USER.LOCATION, locationData, { id: userId });
   }
 
   /**
    * Mettre à jour la photo d'un utilisateur
-   * POST /user/photo/{id}
+   * POST /api/v1/user/photo/{id}
    * @param id 
    * @param photoData 
    * @returns 
    */
   updateUserPhoto(id: string, photoData: UpdatePhotoRequest): Observable<User> {
-    return this.http.post<User>(`${this.baseUrl}/photo/${id}`, photoData, this.httpOptions);
+    return this.apiService.post<User>(APP_CONSTANTS.API_ENDPOINTS.USER.PHOTO, photoData, { id });
   }
 
   /**
    * Changer le mot de passe d'un utilisateur
-   * POST /user/password/change
+   * POST /api/v1/user/password/change
    * @param changeData 
    * @returns 
    */
   changeUserPassword(changeData: PasswordChangeRequest): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/password/change`, changeData, this.httpOptions);
+    return this.apiService.post<void>(APP_CONSTANTS.API_ENDPOINTS.USER.PASSWORD_CHANGE, changeData);
   }
 
   /**
    * Activer/Désactiver le statut en ligne d'un utilisateur
-   * PATCH /user/{id}/toggle-online
+   * PATCH /api/v1/user/{id}/toggle-online
    * @param id 
    * @returns 
    */
   toggleUserOnlineStatus(id: string): Observable<User> {
-    return this.http.patch<User>(`${this.baseUrl}/${id}/toggle-online`, {}, this.httpOptions);
+    return this.apiService.patch<User>(APP_CONSTANTS.API_ENDPOINTS.USER.TOGGLE_ONLINE, {}, { id });
   }
 
   /**
    * Mettre à jour le statut marital d'un utilisateur
-   * PATCH /user/{id}/marital-status
+   * PATCH /api/v1/user/{id}/marital-status
    * @param id 
    * @param maritalStatusData 
    * @returns 
    */
   updateMaritalStatus(id: string, maritalStatusData: UpdateMaritalStatusRequest): Observable<User> {
-    return this.http.patch<User>(`${this.baseUrl}/${id}/marital-status`, maritalStatusData, this.httpOptions);
+    return this.apiService.patch<User>(APP_CONSTANTS.API_ENDPOINTS.USER.MARITAL_STATUS, maritalStatusData, { id });
   }
 
   /**
    * Supprimer un utilisateur
-   * DELETE /user/{id}
+   * DELETE /api/v1/user/{id}
    * @param id 
    * @returns 
    */
   deleteUser(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`, this.httpOptions);
+    return this.apiService.delete<void>(APP_CONSTANTS.API_ENDPOINTS.USER.DELETE, { id });
   }
 
   /**

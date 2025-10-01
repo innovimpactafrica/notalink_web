@@ -1,6 +1,3 @@
-import { STATUS_CODES } from "http";
-
-// shared/constants/app.constants.ts
 export const APP_CONSTANTS = {
   STORAGE_KEYS: {
     ACCESS_TOKEN: 'access_token',
@@ -10,27 +7,115 @@ export const APP_CONSTANTS = {
   
   API_ENDPOINTS: {
     AUTH: {
-      SIGN_IN: 'api/auth/signin',
-      SIGN_UP: 'api/auth/signup',
-      REFRESH: 'api/auth/refresh',
-      LOGOUT: 'api/auth/logout',
-      PASSWORD_RESET: 'api/auth/password/reset',
-      PASSWORD_CHANGE: 'api/auth/password/change',
-      RESERVATAIRE: 'api/auth/reservataire'
+      SIGN_IN: 'auth/signin',
+      SIGN_UP: 'auth/signup',
+      REFRESH: 'auth/refresh',
+      LOGOUT: 'auth/api/auth/logout',
+      PASSWORD_RESET: 'auth/password/reset',
+      PASSWORD_CHANGE: 'auth/password/change/{id}',
+      RESERVATAIRE: 'auth/reservataire/{id}'
     },
     USER: {
-      ME: 'api/v1/user/me',
-      BY_ID: 'api/v1/user',
-      UPDATE: 'api/v1/user/update',
-      LOCATION: 'api/v1/user/location',
-      PHOTO: 'api/v1/user/photo',
-      PASSWORD_CHANGE: 'api/v1/user/password/change',
-      TOGGLE_ONLINE: 'api/v1/user/toggle-online',
-      MARITAL_STATUS: 'api/v1/user/marital-status',
-      DELETE: 'api/v1/user',
-      SEARCH: 'api/v1/user/search',
-      NEARBY: 'api/v1/user/nearby',
+      ME: 'v1/user/me',
+      BY_ID: 'v1/user/{id}',
+      UPDATE: 'v1/user/update/{id}',
+      LOCATION: 'v1/user/{id}/location',
+      PHOTO: 'v1/user/photo/{id}',
+      PASSWORD_CHANGE: 'v1/user/password/change',
+      TOGGLE_ONLINE: 'v1/user/{id}/toggle-online',
+      MARITAL_STATUS: 'v1/user/{id}/marital-status',
+      DELETE: 'v1/user/{id}',
+      SEARCH: 'v1/user/search',
+      NEARBY: 'v1/user/nearby',
     },
+    USER_DOCUMENT: {
+      UPDATE: 'user/documents/{documentId}',
+      DELETE: 'user/documents/{documentId}',
+      STATUS: 'user/documents/user-documents/status',
+      UPLOAD: 'user/documents/upload',
+      BY_USER: 'user/documents/{userId}'
+    },
+    SIGNATURE: {
+      SIGN_FORM_URL: 'signature/sign-form-url'
+    },
+    SIGNATURE_POSITION: {
+      GET_BY_DOCUMENT: 'documents/{documentId}/signatures',
+      ADD: 'documents/{documentId}/signatures',
+      DELETE: 'documents/signatures/{positionId}'
+    },
+    RATING: {
+      RATE: 'ratings/rate',
+      BY_USER: 'ratings/user/{userId}',
+      AVERAGE: 'ratings/average/{userId}'
+    },
+    PAYMENT: {
+      UPDATE: 'payments/{id}',
+      DELETE: 'payments/{id}',
+      CREATE: 'payments',
+      KPI_BY_CABINET: 'payments/kpi/cabinet/{cabinetId}',
+      BY_CASE_FILE: 'payments/case-file/{caseFileId}'
+    },
+    MEETING: {
+      BY_ID: 'meetings/{id}',
+      UPDATE: 'meetings/{id}',
+      DELETE: 'meetings/{id}',
+      CREATE: 'meetings',
+      UPCOMING_BY_CLIENT: 'meetings/upcoming/client/{clientId}',
+      UPCOMING_BY_CABINET: 'meetings/upcoming/cabinet/{cabinetId}',
+      NEXT_BY_CABINET: 'meetings/next/cabinet/{cabinetId}',
+      BY_CLIENT_AND_DATE: 'meetings/client/{clientId}/date',
+      BY_CABINET_AND_DATE: 'meetings/cabinet/{cabinetId}/date',
+      ARCHIVED_BY_CLIENT: 'meetings/archived/client/{clientId}',
+      ARCHIVED_BY_CABINET: 'meetings/archived/cabinet/{cabinetId}'
+    },
+    CASE_TYPE: {
+      BY_ID: 'case-types/{id}',
+      UPDATE: 'case-types/{id}',
+      DELETE: 'case-types/{id}',
+      CREATE: 'case-types',
+      ALL: 'case-types',
+      ADD_REQUIRED_DOCUMENT: 'case-types/{caseTypeId}/required-documents',
+      GET_REQUIRED_DOCUMENTS: 'case-types/required-documents/case-type/{caseTypeId}',
+      REMOVE_REQUIRED_DOCUMENT: 'case-types/{caseTypeId}/required-documents/{documentId}'
+    },
+    CASE_PRODUCED_DOCUMENT: {
+      DOCUMENT_TYPES: 'case-produced-documents/document-types/all',
+      UPDATE_STATUS: 'case-produced-documents/{id}/status',
+      TYPE_BY_ID: 'case-produced-documents/types/{id}',
+      UPDATE_TYPE: 'case-produced-documents/types/{id}',
+      DELETE_TYPE: 'case-produced-documents/types/{id}',
+      CREATE_TYPE: 'case-produced-documents/types',
+      SAVE: 'case-produced-documents/save',
+      PENDING_SIGNATURES_BY_CLIENT: 'case-produced-documents/client/{clientId}/pending-signatures',
+      KPI_BY_CLIENT: 'case-produced-documents/client/{clientId}/kpi',
+      BY_CASE_FILE: 'case-produced-documents/case-file/{caseFileId}',
+      KPI_BY_CASE_FILE: 'case-produced-documents/case-file/{caseFileId}/kpi',
+      URGENT_SIGNATURES_BY_CABINET: 'case-produced-documents/cabinet/{cabinetId}/urgent-signatures',
+      KPI_BY_CABINET: 'case-produced-documents/cabinet/{cabinetId}/kpi',
+      DELETE: 'case-produced-documents/{id}'
+    },
+    CASE_FILE: {
+      UPDATE: 'case-files/{id}',
+      CREATE: 'case-files',
+      ADD_CLIENT: 'case-files/{id}/clients/{clientId}',
+      PERCENTAGE_KPI_BY_CLIENT: 'case-files/kpi/percentage/client/{clientId}',
+      PERCENTAGE_KPI_BY_CABINET: 'case-files/kpi/percentage/cabinet/{cabinetId}',
+      BY_CLIENT: 'case-files/client/{clientId}',
+      KPI_BY_CLIENT: 'case-files/client/{clientId}/kpi',
+      BY_CABINET: 'case-files/cabinet/{cabinetId}',
+      KPI_BY_CABINET: 'case-files/cabinet/{cabinetId}/kpi'
+    },
+    CABINET: {
+      BY_ID: 'cabinets/{id}',
+      UPDATE: 'cabinets/{id}',
+      DELETE: 'cabinets/{id}',
+      ADD_AGENT: 'cabinets/{cabinetId}/agents/{agentId}',
+      REMOVE_AGENT: 'cabinets/{cabinetId}/agents/{agentId}',
+      CREATE: 'cabinets/save',
+      AGENTS: 'cabinets/{cabinetId}/agents',
+      SEARCH: 'cabinets/search',
+      BY_NOTARY: 'cabinets/by-notary{id}'
+    }
   },
 
   HTTP_STATUS: {

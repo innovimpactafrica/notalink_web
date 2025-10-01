@@ -4,4 +4,5 @@ export const environment = {
   apiUrl: 'https://wakana.online/notalink/api',
   tokenKey: 'auth_token',
   refreshTokenKey: 'refresh_token',
+  apiFileUrl: 'https://wakana.online/repertoire_notaire/',
 };

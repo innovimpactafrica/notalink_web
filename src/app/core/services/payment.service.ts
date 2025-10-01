@@ -1,7 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment.prod';
 import { 
   Payment, 
   PaymentRequest, 
@@ -11,16 +9,14 @@ import {
 import { 
   PaginatedResponse,
 } from '../../shared/interfaces/api-response.interface';
+import { ApiService } from './api.service';
+import { APP_CONSTANTS } from '../../shared/constants/app.constants';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PaymentService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/payments`;
-  private readonly httpOptions = {
-    withCredentials: true,
-  };
+  private readonly apiService = inject(ApiService);
 
   /**
    * Mettre à jour un paiement
@@ -32,10 +28,10 @@ export class PaymentService {
     id: string, 
     request: PaymentRequest
   ): Observable<Payment> {
-    return this.http.put<Payment>(
-      `${this.apiUrl}/${id}`,
-      request, 
-      this.httpOptions
+    return this.apiService.put<Payment>(
+      APP_CONSTANTS.API_ENDPOINTS.PAYMENT.UPDATE,
+      request,
+      { id }
     );
   }
 
@@ -46,9 +42,9 @@ export class PaymentService {
    * @returns
    */
   deletePayment(id: string): Observable<void> {
-    return this.http.delete<void>(
-      `${this.apiUrl}/${id}`, 
-      this.httpOptions
+    return this.apiService.delete<void>(
+      APP_CONSTANTS.API_ENDPOINTS.PAYMENT.DELETE,
+      { id }
     );
   }
 
@@ -58,11 +54,9 @@ export class PaymentService {
    * @returns
    */
   createPayment(request: PaymentRequest): Observable<Payment> {
-    console.log('Creating payment with request:', request);
-    return this.http.post<Payment>(
-      this.apiUrl,
-      request, 
-      this.httpOptions
+    return this.apiService.post<Payment>(
+      APP_CONSTANTS.API_ENDPOINTS.PAYMENT.CREATE,
+      request
     );
   }
 
@@ -79,13 +73,9 @@ export class PaymentService {
     start: string, 
     end: string
   ): Observable<PaymentKPI> {
-    const params = new HttpParams()
-      .set('start', start)
-      .set('end', end);
-
-    return this.http.get<PaymentKPI>(
-      `${this.apiUrl}/kpi/cabinet/${cabinetId}`,
-      { ...this.httpOptions, params }
+    return this.apiService.get<PaymentKPI>(
+      APP_CONSTANTS.API_ENDPOINTS.PAYMENT.KPI_BY_CABINET,
+      { cabinetId, start, end }
     );
   }
 
@@ -100,18 +90,9 @@ export class PaymentService {
     caseFileId: string, 
     paginationParams?: PaginationParams
   ): Observable<PaginatedResponse<Payment>> {
-    let params = new HttpParams();
-    
-    if (paginationParams?.page) {
-      params = params.set('page', paginationParams.page.toString());
-    }
-    if (paginationParams?.size) {
-      params = params.set('size', paginationParams.size.toString());
-    }
-
-    return this.http.get<PaginatedResponse<Payment>>(
-      `${this.apiUrl}/case-file/${caseFileId}`,
-      { ...this.httpOptions ,params }
+    return this.apiService.get<PaginatedResponse<Payment>>(
+      APP_CONSTANTS.API_ENDPOINTS.PAYMENT.BY_CASE_FILE,
+      { caseFileId, ...paginationParams }
     );
   }
 }

@@ -27,73 +27,7 @@ import { SignUpRequest } from '../../shared/interfaces/auth.interface';
     RessourcesHumainesComponent,
     EmployeModalComponent
   ],
-  template: `
-    <app-main-layout [pageTitle]="'Espace Notaire'">
-      <div class="flex mx-auto space-x-6">
-        <!-- Tabs Navigation -->
-        <div class="bg-white rounded-lg p-6 shadow-sm h-1/4 w-1/4">
-          <div class="flex flex-col space-y-1">
-            <button
-              *ngFor="let tab of tabs"
-              (click)="setActiveTab(tab.id)"
-              [ngClass]="getTabClasses(tab.id)"
-              class="flex items-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200">
-              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="tab.icon"></path>
-              </svg>
-              <span>{{ tab.label }}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Tab Content -->
-        <div class="transition-all duration-300 flex-1">
-          <app-informations-generales
-            *ngIf="activeTab === 'informations'"
-            [userData]="currentUser"
-            (infoUpdated)="onInfoUpdated($event)">
-          </app-informations-generales>
-
-          <app-documents-justificatifs
-            *ngIf="activeTab === 'documents'"
-            [documents]="userDocuments"
-            [userId]="currentUser?.id"
-            (documentAdded)="onDocumentAdded()">
-          </app-documents-justificatifs>
-
-          <app-ressources-humaines
-            *ngIf="activeTab === 'ressources'"
-            [agents]="agents"
-            (employeAdded)="onAddEmploye()"
-            (employeEdited)="onEditEmploye($event)"
-            (employeDeleted)="onDeleteEmploye($event)"
-            (employeStatusChanged)="onEmployeStatusChanged($event)">
-          </app-ressources-humaines>
-        </div>
-      </div>
-
-      <!-- Modal Employé -->
-      <app-employe-modal
-        [isVisible]="showEmployeModal"
-        [employe]="selectedEmploye"
-        (closed)="onEmployeModalClosed()"
-        (employeSaved)="onEmployeSaved($event)">
-      </app-employe-modal>
-
-      <!-- Notification Modal -->
-      <app-notification-modal
-        [isVisible]="showNotification"
-        [status]="notificationData.status"
-        [title]="notificationData.title"
-        [description]="notificationData.description"
-        [buttonConfig]="notificationData.buttonConfig"
-        [showCloseButton]="notificationData.showCloseButton"
-        [closeOnOverlayClick]="notificationData.closeOnOverlayClick"
-        (closed)="onNotificationClosed()"
-        (buttonClicked)="onNotificationButtonClicked($event)">
-      </app-notification-modal>
-    </app-main-layout>
-  `,
+  templateUrl: './espace.component.html',
   styles: [`
     .tab-enter {
       opacity: 0;

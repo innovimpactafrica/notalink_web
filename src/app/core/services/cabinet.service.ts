@@ -1,7 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment.prod';
 import {
     Cabinet,
     CabinetRequest,
@@ -11,16 +9,14 @@ import {
 import {
     PaginatedResponse,
 } from '../../shared/interfaces/api-response.interface';
+import { ApiService } from './api.service';
+import { APP_CONSTANTS } from '../../shared/constants/app.constants';
 
 @Injectable({
     providedIn: 'root'
 })
 export class CabinetService {
-    private readonly http = inject(HttpClient);
-    private readonly apiUrl = `${environment.apiUrl}/cabinets`;
-    private readonly httpOptions = {
-        withCredentials: true
-    };
+    private readonly apiService = inject(ApiService);
 
     /**
      * Récupérer un cabinet par ID
@@ -29,8 +25,9 @@ export class CabinetService {
      * @returns
      */
     getCabinetById(id: string): Observable<Cabinet> {
-        return this.http.get<Cabinet>(
-            `${this.apiUrl}/${id}`, this.httpOptions
+        return this.apiService.get<Cabinet>(
+            APP_CONSTANTS.API_ENDPOINTS.CABINET.BY_ID,
+            { id }
         );
     }
 
@@ -58,9 +55,10 @@ export class CabinetService {
             formData.append('logoFile', request.logoFile);
         }
 
-        return this.http.put<Cabinet>(
-            `${this.apiUrl}/${id}`,
-            formData, this.httpOptions
+        return this.apiService.put<Cabinet>(
+            APP_CONSTANTS.API_ENDPOINTS.CABINET.UPDATE,
+            formData,
+            { id }
         );
     }
 
@@ -71,8 +69,9 @@ export class CabinetService {
      * @returns 
      */
     deleteCabinet(id: string): Observable<void> {
-        return this.http.delete<void>(
-            `${this.apiUrl}/${id}`, this.httpOptions
+        return this.apiService.delete<void>(
+            APP_CONSTANTS.API_ENDPOINTS.CABINET.DELETE,
+            { id }
         );
     }
 
@@ -87,9 +86,10 @@ export class CabinetService {
         cabinetId: string,
         agentId: string
     ): Observable<CabinetAgent> {
-        return this.http.post<CabinetAgent>(
-            `${this.apiUrl}/${cabinetId}/agents/${agentId}`,
-            null, this.httpOptions
+        return this.apiService.post<CabinetAgent>(
+            APP_CONSTANTS.API_ENDPOINTS.CABINET.ADD_AGENT,
+            null,
+            { cabinetId, agentId }
         );
     }
 
@@ -104,8 +104,9 @@ export class CabinetService {
         cabinetId: string,
         agentId: string
     ): Observable<void> {
-        return this.http.delete<void>(
-            `${this.apiUrl}/${cabinetId}/agents/${agentId}`, this.httpOptions
+        return this.apiService.delete<void>(
+            APP_CONSTANTS.API_ENDPOINTS.CABINET.REMOVE_AGENT,
+            { cabinetId, agentId }
         );
     }
 
@@ -129,9 +130,9 @@ export class CabinetService {
             formData.append('logoFile', request.logoFile);
         }
 
-        return this.http.post<Cabinet>(
-            `${this.apiUrl}/save`,
-            formData, this.httpOptions
+        return this.apiService.post<Cabinet>(
+            APP_CONSTANTS.API_ENDPOINTS.CABINET.CREATE,
+            formData
         );
     }
 
@@ -142,8 +143,9 @@ export class CabinetService {
      * @returns
      */
     getCabinetAgents(cabinetId: string): Observable<CabinetAgent[]> {
-        return this.http.get<CabinetAgent[]>(
-            `${this.apiUrl}/${cabinetId}/agents`, this.httpOptions
+        return this.apiService.get<CabinetAgent[]>(
+            APP_CONSTANTS.API_ENDPOINTS.CABINET.AGENTS,
+            { cabinetId }
         );
     }
 
@@ -154,23 +156,15 @@ export class CabinetService {
      * @returns
      */
     searchCabinets(searchParams: CabinetSearchParams): Observable<PaginatedResponse<Cabinet>> {
-        let params = new HttpParams()
-            .set('latitude', searchParams.latitude.toString())
-            .set('longitude', searchParams.longitude.toString());
-
-        if (searchParams.name) {
-            params = params.set('name', searchParams.name);
-        }
-        if (searchParams.page) {
-            params = params.set('page', searchParams.page.toString());
-        }
-        if (searchParams.size) {
-            params = params.set('size', searchParams.size.toString());
-        }
-
-        return this.http.get<PaginatedResponse<Cabinet>>(
-            `${this.apiUrl}/search`,
-            { ...this.httpOptions, params }
+        return this.apiService.get<PaginatedResponse<Cabinet>>(
+            APP_CONSTANTS.API_ENDPOINTS.CABINET.SEARCH,
+            {
+                latitude: searchParams.latitude,
+                longitude: searchParams.longitude,
+                name: searchParams.name,
+                page: searchParams.page,
+                size: searchParams.size
+            }
         );
     }
 
@@ -181,8 +175,9 @@ export class CabinetService {
      * @returns
      */
     getCabinetsByNotary(id: string): Observable<Cabinet> {
-        return this.http.get<Cabinet>(
-            `${this.apiUrl}/by-notary${id}`, this.httpOptions
+        return this.apiService.get<Cabinet>(
+            APP_CONSTANTS.API_ENDPOINTS.CABINET.BY_NOTARY,
+            { id }
         );
     }
 }

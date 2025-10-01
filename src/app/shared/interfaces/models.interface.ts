@@ -18,7 +18,7 @@ export enum ProducedDocumentStatus {
   DRAFT = 'DRAFT',
   PENDING_SIGNATURE = 'PENDING_SIGNATURE',
   SIGNED = 'SIGNED',
-  ARCHIVED = 'ARCHIVED'
+  ARCHIVED = 'ARCHIVED' 
 }
 
 export enum CaseFileStatus {
@@ -155,6 +155,9 @@ export interface CaseProducedDocument {
   };
   caseFileId?: string;
   documentTypeId?: string;
+  size?: string; // Ajouté pour la taille (ex. "1.2 MB")
+  validatedBy?: string; // ID de l'utilisateur ayant validé
+  validatedDate?: string | Date; // Date de validation
 }
 
 export interface CaseProducedDocumentType {
@@ -181,11 +184,14 @@ export interface CaseProducedDocumentKPI {
   noSignatureRequired?: number;
   signed?: number;
   awaitingSignature?: number;
+  draft?: number;
   total?: number;
 }
 
 // Case File interfaces
 export interface CaseFile {
+  progress: number;
+  caseTypeName: string;
   id: string;
   reference: string;
   title: string;

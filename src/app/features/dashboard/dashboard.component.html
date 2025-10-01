@@ -1,77 +1,52 @@
-<app-main-layout 
-      [pageTitle]="'Tableau de bord'">
-      
-      <!-- Dashboard Content -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 w-7xl mx-auto">
-        
-        <!-- Welcome Card - Spans full width on small screens, 2 columns on larger -->
-        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
-          <app-welcome-card
-            [userName]="welcomeData.userName"
-            [date]="welcomeData.date"
-            [location]="welcomeData.location"
-            [stats]="welcomeData.stats">
-          </app-welcome-card>
-        </div>
+<app-main-layout [pageTitle]="'Tableau de bord'">
+  <!-- Dashboard Content -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 w-7xl mx-auto">
+    <!-- Welcome Card - Spans full width on small screens, 2 columns on larger -->
+    <div class="col-span-1 sm:col-span-2 lg:col-span-4">
+      <app-welcome-card [userName]="welcomeData.userName" [date]="welcomeData.date" [location]="welcomeData.location"
+        [stats]="welcomeData.stats">
+      </app-welcome-card>
+    </div>
 
-        <!-- Chart Card - 1 column on small, full width on mobile -->
-        <div class="col-span-1 sm:col-span-1 lg:col-span-2">
-          <app-chart-card
-            [title]="chartData.title"
-            [data]="chartData.data"
-            [period]="chartData.period">
-          </app-chart-card>
-        </div>
+    <!-- Chart Card - 1 column on small, full width on mobile -->
+    <div class="col-span-1 sm:col-span-1 lg:col-span-2">
+      <app-chart-card [title]="'Répartition des dossiers (%)'"></app-chart-card>
+    </div>
 
-        <!-- Documents Chart - 1 column on small, full width on mobile -->
-        <div class="col-span-1 sm:col-span-1 lg:col-span-2">
-          <app-stat-card
-            [title]="documentsData.title"
-            [data]="documentsData.data"
-            [period]="documentsData.period">
-          </app-stat-card>
-        </div>
+    <!-- Documents Chart - 1 column on small, full width on mobile -->
+    <div class="col-span-1 sm:col-span-1 lg:col-span-2">
+      <app-stat-card [title]="'Documents'"></app-stat-card>
+    </div>
 
-        <!-- Payments Card - Spans full width -->
-        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
-          <app-payment-card
-            [title]="paymentsData.title"
-            [data]="paymentsData.data">
-          </app-payment-card>
-        </div>
+    <!-- Payments Card - Spans full width -->
+    <div class="col-span-1 sm:col-span-2 lg:col-span-4">
+      <app-payment-card [title]="'Paiements'"></app-payment-card>
+    </div>
 
-        <!-- Alert Card (Documents) -->
-        <div class="col-span-1 sm:col-span-1 lg:col-span-2">
-          <app-alert-card
-            [title]="alertsData.documentsTitle"
-            [alerts]="alertsData.documentAlerts"
-            [type]="'document'">
-          </app-alert-card>
-        </div>
+    <!-- Alert Card (Documents) -->
+    <div class="col-span-1 sm:col-span-2 lg:col-span-4">
+      <app-alert-card [title]="alertsData.documentsTitle" [type]="'document'">
+      </app-alert-card>
+    </div>
 
-        <!-- Alert Card (Messages) -->
-        <div class="col-span-1 sm:col-span-1 lg:col-span-2">
+    <!-- Alert Card (Messages) -->
+    <!-- <div class="col-span-1 sm:col-span-1 lg:col-span-2">
           <app-alert-card
             [title]="alertsData.messagesTitle"
-            [alerts]="alertsData.messageAlerts"
             [type]="'message'">
           </app-alert-card>
-        </div>
+        </div> -->
 
-        <!-- Signature Card -->
-        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
-          <app-signature-card
-            [title]="signaturesData.title"
-            [signatures]="signaturesData.items">
-          </app-signature-card>
-        </div>
+    <!-- Signature Card -->
+    <div class="col-span-1 sm:col-span-2 lg:col-span-4">
+      <app-signature-card [title]="signaturesData.title">
+      </app-signature-card>
+    </div>
 
-        <!-- Workload Card -->
-        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
-          <app-workload-card
-            [title]="workloadData.title"
-            [items]="workloadData.items">
-          </app-workload-card>
-        </div>
-      </div>
-    </app-main-layout>
+    <!-- Workload Card -->
+    <div class="col-span-1 sm:col-span-2 lg:col-span-4">
+      <app-workload-card [title]="workloadData.title">
+      </app-workload-card>
+    </div>
+  </div>
+</app-main-layout>

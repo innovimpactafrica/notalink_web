@@ -1,22 +1,18 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment.prod';
 import { 
   UserDocument, 
   UserDocumentRequest, 
   DocumentStatusUpdate 
 } from '../../shared/interfaces/models.interface';
+import { ApiService } from './api.service';
+import { APP_CONSTANTS } from '../../shared/constants/app.constants';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserDocumentService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/user/documents`;
-  private readonly httpOptions = {
-    withCredentials: true
-  };
+  private readonly apiService = inject(ApiService);
 
   /**
    * Mettre à jour un document utilisateur
@@ -33,10 +29,10 @@ export class UserDocumentService {
     formData.append('name', request.name);
     formData.append('file', request.file);
 
-    return this.http.put<UserDocument>(
-      `${this.apiUrl}/${documentId}`,
-      formData, 
-      this.httpOptions
+    return this.apiService.put<UserDocument>(
+      APP_CONSTANTS.API_ENDPOINTS.USER_DOCUMENT.UPDATE,
+      formData,
+      { documentId }
     );
   }
 
@@ -47,9 +43,9 @@ export class UserDocumentService {
    * @returns
    */
   deleteUserDocument(documentId: string): Observable<void> {
-    return this.http.delete<void>(
-      `${this.apiUrl}/${documentId}`, 
-      this.httpOptions
+    return this.apiService.delete<void>(
+      APP_CONSTANTS.API_ENDPOINTS.USER_DOCUMENT.DELETE,
+      { documentId }
     );
   }
 
@@ -59,10 +55,9 @@ export class UserDocumentService {
    * @returns
    */
   updateDocumentStatus(request: DocumentStatusUpdate): Observable<UserDocument> {
-    return this.http.put<UserDocument>(
-      `${this.apiUrl}/user-documents/status`,
-      request, 
-      this.httpOptions
+    return this.apiService.put<UserDocument>(
+      APP_CONSTANTS.API_ENDPOINTS.USER_DOCUMENT.STATUS,
+      request
     );
   }
 
@@ -77,22 +72,22 @@ export class UserDocumentService {
     formData.append('name', request.name);
     formData.append('file', request.file);
 
-    return this.http.post<UserDocument>(
-      `${this.apiUrl}/upload`,
-      formData, 
-      this.httpOptions
+    return this.apiService.post<UserDocument>(
+      APP_CONSTANTS.API_ENDPOINTS.USER_DOCUMENT.UPLOAD,
+      formData
     );
   }
 
   /**
    * Récupérer les documents d'un utilisateur
-   * GET /user/documents/{userID}
+   * GET /user/documents/{userId}
    * @param userId 
    * @returns
    */
   getUserDocuments(userId: string): Observable<UserDocument[]> {
-    return this.http.get<UserDocument[]>(
-      `${this.apiUrl}/${userId}`
+    return this.apiService.get<UserDocument[]>(
+      APP_CONSTANTS.API_ENDPOINTS.USER_DOCUMENT.BY_USER,
+      { userId }
     );
   }
 }

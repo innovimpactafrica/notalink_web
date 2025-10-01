@@ -65,67 +65,7 @@ interface WelcomeData {
     SignatureCardComponent,
     WorkloadCardComponent
   ],
-  template: `
-    <app-main-layout [pageTitle]="'Tableau de bord'">
-      <!-- Dashboard Content -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 w-7xl mx-auto">
-        <!-- Welcome Card - Spans full width on small screens, 2 columns on larger -->
-        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
-          <app-welcome-card
-            [userName]="welcomeData.userName"
-            [date]="welcomeData.date"
-            [location]="welcomeData.location"
-            [stats]="welcomeData.stats">
-          </app-welcome-card>
-        </div>
-
-        <!-- Chart Card - 1 column on small, full width on mobile -->
-        <div class="col-span-1 sm:col-span-1 lg:col-span-2">
-          <app-chart-card [title]="'Répartition des dossiers (%)'"></app-chart-card>
-        </div>
-
-        <!-- Documents Chart - 1 column on small, full width on mobile -->
-        <div class="col-span-1 sm:col-span-1 lg:col-span-2">
-          <app-stat-card [title]="'Documents'"></app-stat-card>
-        </div>
-
-        <!-- Payments Card - Spans full width -->
-        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
-          <app-payment-card [title]="'Paiements'"></app-payment-card>
-        </div>
-
-        <!-- Alert Card (Documents) -->
-        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
-          <app-alert-card
-            [title]="alertsData.documentsTitle"
-            [type]="'document'">
-          </app-alert-card>
-        </div>
-
-        <!-- Alert Card (Messages) -->
-        <!-- <div class="col-span-1 sm:col-span-1 lg:col-span-2">
-          <app-alert-card
-            [title]="alertsData.messagesTitle"
-            [type]="'message'">
-          </app-alert-card>
-        </div> -->
-
-        <!-- Signature Card -->
-        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
-          <app-signature-card
-            [title]="signaturesData.title">
-          </app-signature-card>
-        </div>
-
-        <!-- Workload Card -->
-        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
-          <app-workload-card
-            [title]="workloadData.title">
-          </app-workload-card>
-        </div>
-      </div>
-    </app-main-layout>
-  `,
+  templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
   private readonly userService = inject(UserService);
@@ -302,7 +242,7 @@ export class DashboardComponent implements OnInit {
       month: 'long',
       day: 'numeric'
     };
-    
+
     return date.toLocaleDateString('fr-FR', options)
       .replace(/^\w/, c => c.toUpperCase());
   }

@@ -1,49 +1,33 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment.prod';
 import { 
   CaseProducedDocument, 
   CaseProducedDocumentType, 
   CaseProducedDocumentTypeRequest, 
   CaseProducedDocumentRequest, 
   CaseProducedDocumentKPI, 
-  ProducedDocumentStatus,
+  ProducedDocumentStatus, 
   PaginationParams 
 } from '../../shared/interfaces/models.interface';
 import { 
   PaginatedResponse,
 } from '../../shared/interfaces/api-response.interface';
+import { ApiService } from './api.service';
+import { APP_CONSTANTS } from '../../shared/constants/app.constants';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CaseProducedDocumentService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/case-produced-documents`;
-  private readonly httpOptions = {
-    withCredentials: true,
-  };
+  private readonly apiService = inject(ApiService);
 
   /**
    * Récupérer tous les types de documents
-   * GET /case-produced-documents/types
-   * @param paginationParams
-   * @returns
+   * GET /case-produced-documents/document-types/all
    */
-  getDocumentTypes(paginationParams?: PaginationParams): Observable<PaginatedResponse<CaseProducedDocumentType>> {
-    let params = new HttpParams();
-    
-    if (paginationParams?.page) {
-      params = params.set('page', paginationParams.page.toString());
-    }
-    if (paginationParams?.size) {
-      params = params.set('size', paginationParams.size.toString());
-    }
-
-    return this.http.get<PaginatedResponse<CaseProducedDocumentType>>(
-      `${this.apiUrl}/types`,
-      { ...this.httpOptions, params }
+  getDocumentTypes(): Observable<CaseProducedDocumentType[]> {
+    return this.apiService.get<CaseProducedDocumentType[]>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_PRODUCED_DOCUMENT.DOCUMENT_TYPES
     );
   }
 
@@ -58,12 +42,10 @@ export class CaseProducedDocumentService {
     id: string, 
     status: ProducedDocumentStatus
   ): Observable<CaseProducedDocument> {
-    const params = new HttpParams().set('status', status);
-
-    return this.http.put<CaseProducedDocument>(
-      `${this.apiUrl}/${id}/status`,
+    return this.apiService.put<CaseProducedDocument>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_PRODUCED_DOCUMENT.UPDATE_STATUS,
       null,
-      { ...this.httpOptions, params }
+      { id, status }
     );
   }
 
@@ -74,8 +56,9 @@ export class CaseProducedDocumentService {
    * @returns
    */
   getDocumentTypeById(id: string): Observable<CaseProducedDocumentType> {
-    return this.http.get<CaseProducedDocumentType>(
-      `${this.apiUrl}/types/${id}`, this.httpOptions
+    return this.apiService.get<CaseProducedDocumentType>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_PRODUCED_DOCUMENT.TYPE_BY_ID,
+      { id }
     );
   }
 
@@ -89,9 +72,10 @@ export class CaseProducedDocumentService {
     id: string, 
     request: CaseProducedDocumentTypeRequest
   ): Observable<CaseProducedDocumentType> {
-    return this.http.put<CaseProducedDocumentType>(
-      `${this.apiUrl}/types/${id}`, 
-      request, this.httpOptions
+    return this.apiService.put<CaseProducedDocumentType>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_PRODUCED_DOCUMENT.UPDATE_TYPE,
+      request,
+      { id }
     );
   }
 
@@ -102,8 +86,9 @@ export class CaseProducedDocumentService {
    * @returns
    */
   deleteDocumentType(id: string): Observable<void> {
-    return this.http.delete<void>(
-      `${this.apiUrl}/types/${id}`, this.httpOptions
+    return this.apiService.delete<void>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_PRODUCED_DOCUMENT.DELETE_TYPE,
+      { id }
     );
   }
 
@@ -115,9 +100,9 @@ export class CaseProducedDocumentService {
   createDocumentType(
     request: CaseProducedDocumentTypeRequest
   ): Observable<CaseProducedDocumentType> {
-    return this.http.post<CaseProducedDocumentType>(
-      `${this.apiUrl}/types`,
-      request, this.httpOptions
+    return this.apiService.post<CaseProducedDocumentType>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_PRODUCED_DOCUMENT.CREATE_TYPE,
+      request
     );
   }
 
@@ -133,9 +118,9 @@ export class CaseProducedDocumentService {
     formData.append('file', request.file);
     formData.append('documentTypeId', request.documentTypeId);
 
-    return this.http.post<CaseProducedDocument>(
-      `${this.apiUrl}/save`,
-      formData, this.httpOptions
+    return this.apiService.post<CaseProducedDocument>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_PRODUCED_DOCUMENT.SAVE,
+      formData
     );
   }
 
@@ -150,18 +135,9 @@ export class CaseProducedDocumentService {
     clientId: string, 
     paginationParams?: PaginationParams
   ): Observable<PaginatedResponse<CaseProducedDocument>> {
-    let params = new HttpParams();
-    
-    if (paginationParams?.page) {
-      params = params.set('page', paginationParams.page.toString());
-    }
-    if (paginationParams?.size) {
-      params = params.set('size', paginationParams.size.toString());
-    }
-
-    return this.http.get<PaginatedResponse<CaseProducedDocument>>(
-      `${this.apiUrl}/client/${clientId}/pending-signatures`,
-      { ...this.httpOptions, params }
+    return this.apiService.get<PaginatedResponse<CaseProducedDocument>>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_PRODUCED_DOCUMENT.PENDING_SIGNATURES_BY_CLIENT,
+      { clientId, ...paginationParams }
     );
   }
 
@@ -172,8 +148,9 @@ export class CaseProducedDocumentService {
    * @returns
    */
   getClientDocumentKPI(clientId: string): Observable<CaseProducedDocumentKPI> {
-    return this.http.get<CaseProducedDocumentKPI>(
-      `${this.apiUrl}/client/${clientId}/kpi`, this.httpOptions
+    return this.apiService.get<CaseProducedDocumentKPI>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_PRODUCED_DOCUMENT.KPI_BY_CLIENT,
+      { clientId }
     );
   }
 
@@ -192,24 +169,9 @@ export class CaseProducedDocumentService {
     status?: ProducedDocumentStatus, 
     paginationParams?: PaginationParams
   ): Observable<PaginatedResponse<CaseProducedDocument>> {
-    let params = new HttpParams();
-    
-    if (typeId) {
-      params = params.set('typeId', typeId);
-    }
-    if (status) {
-      params = params.set('status', status);
-    }
-    if (paginationParams?.page) {
-      params = params.set('page', paginationParams.page.toString());
-    }
-    if (paginationParams?.size) {
-      params = params.set('size', paginationParams.size.toString());
-    }
-
-    return this.http.get<PaginatedResponse<CaseProducedDocument>>(
-      `${this.apiUrl}/case-file/${caseFileId}`,
-      { ...this.httpOptions, params }
+    return this.apiService.get<PaginatedResponse<CaseProducedDocument>>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_PRODUCED_DOCUMENT.BY_CASE_FILE,
+      { caseFileId, typeId, status, ...paginationParams }
     );
   }
 
@@ -220,8 +182,9 @@ export class CaseProducedDocumentService {
    * @returns
    */
   getCaseFileDocumentKPI(caseFileId: string): Observable<CaseProducedDocumentKPI> {
-    return this.http.get<CaseProducedDocumentKPI>(
-      `${this.apiUrl}/case-file/${caseFileId}/kpi`, this.httpOptions
+    return this.apiService.get<CaseProducedDocumentKPI>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_PRODUCED_DOCUMENT.KPI_BY_CASE_FILE,
+      { caseFileId }
     );
   }
 
@@ -236,18 +199,9 @@ export class CaseProducedDocumentService {
     cabinetId: string, 
     paginationParams?: PaginationParams
   ): Observable<PaginatedResponse<CaseProducedDocument>> {
-    let params = new HttpParams();
-    
-    if (paginationParams?.page) {
-      params = params.set('page', paginationParams.page.toString());
-    }
-    if (paginationParams?.size) {
-      params = params.set('size', paginationParams.size.toString());
-    }
-
-    return this.http.get<PaginatedResponse<CaseProducedDocument>>(
-      `${this.apiUrl}/cabinet/${cabinetId}/urgent-signatures`,
-      { ...this.httpOptions, params }
+    return this.apiService.get<PaginatedResponse<CaseProducedDocument>>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_PRODUCED_DOCUMENT.URGENT_SIGNATURES_BY_CABINET,
+      { cabinetId, ...paginationParams }
     );
   }
 
@@ -258,8 +212,9 @@ export class CaseProducedDocumentService {
    * @returns
    */
   getCabinetDocumentKPI(cabinetId: string): Observable<CaseProducedDocumentKPI> {
-    return this.http.get<CaseProducedDocumentKPI>(
-      `${this.apiUrl}/cabinet/${cabinetId}/kpi`, this.httpOptions
+    return this.apiService.get<CaseProducedDocumentKPI>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_PRODUCED_DOCUMENT.KPI_BY_CABINET,
+      { cabinetId }
     );
   }
 
@@ -270,8 +225,9 @@ export class CaseProducedDocumentService {
    * @returns
    */
   deleteDocument(id: string): Observable<void> {
-    return this.http.delete<void>(
-      `${this.apiUrl}/${id}`, this.httpOptions
+    return this.apiService.delete<void>(
+      APP_CONSTANTS.API_ENDPOINTS.CASE_PRODUCED_DOCUMENT.DELETE,
+      { id }
     );
   }
 }

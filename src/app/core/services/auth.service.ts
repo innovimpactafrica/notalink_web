@@ -1,6 +1,4 @@
-// core/services/auth.service.ts
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { tap, map, catchError } from 'rxjs/operators';
 import {
@@ -14,109 +12,120 @@ import {
   PasswordChangeRequest,
   AuthResponse,
 } from '../../shared/interfaces/auth.interface';
-import { environment } from '../../../environments/environment.prod';
+import { ApiService } from './api.service';
+import { APP_CONSTANTS } from '../../shared/constants/app.constants';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly http = inject(HttpClient);
+  private readonly apiService = inject(ApiService);
   
-  private readonly baseUrl = `${environment.apiUrl}/auth`;
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   
   public currentUser$ = this.currentUserSubject.asObservable();
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
-  private readonly httpOptions = {
-    withCredentials: true,
-  };
 
   /**
    * Se connecter
-   * Post /auth/signin
+   * POST /api/auth/signin
    * @param credentials 
    * @returns 
    */
   signIn(credentials: SignInRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/signin`, credentials, this.httpOptions)
-      .pipe(
-        tap(authResponse => this.handleAuthSuccess(authResponse)),
-        catchError(this.handleError)
-      );
+    return this.apiService.post<AuthResponse>(
+      APP_CONSTANTS.API_ENDPOINTS.AUTH.SIGN_IN,
+      credentials
+    ).pipe(
+      tap(authResponse => this.handleAuthSuccess(authResponse)),
+      catchError(this.handleError)
+    );
   }
 
   /**
    * S'inscrire
-   * Post /auth/signup
+   * POST /api/auth/signup
    * @param userData 
    * @returns 
    */
   signUp(userData: SignUpRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/signup`, userData, this.httpOptions)
-      .pipe(
-        tap(authResponse => this.handleAuthSuccess(authResponse)),
-        catchError(this.handleError)
-      );
+    return this.apiService.post<AuthResponse>(
+      APP_CONSTANTS.API_ENDPOINTS.AUTH.SIGN_UP,
+      userData
+    ).pipe(
+      tap(authResponse => this.handleAuthSuccess(authResponse)),
+      catchError(this.handleError)
+    );
   }
 
   /**
    * Réinitialiser le mot de passe
-   * Post /auth/password/reset
+   * POST /api/auth/password/reset
    * @param resetData 
    * @returns 
    */
   resetPassword(resetData: PasswordResetRequest): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/password/reset`, resetData, this.httpOptions)
-      .pipe(
-        map(() => void 0),
-        catchError(this.handleError)
-      );
+    return this.apiService.post<void>(
+      APP_CONSTANTS.API_ENDPOINTS.AUTH.PASSWORD_RESET,
+      resetData
+    ).pipe(
+      map(() => void 0),
+      catchError(this.handleError)
+    );
   }
 
   /**
    * Changer le mot de passe
-   * Put /auth/password/change
+   * PUT /api/auth/password/change/{id}
+   * @param id 
    * @param changeData 
    * @returns 
    */
   changePassword(id: string, changeData: PasswordChangeRequest): Observable<void> {
-    return this.http.put<void>(`${this.baseUrl}/password/change/${id}`, changeData, this.httpOptions)
-      .pipe(
-        map(() => void 0),
-        catchError(this.handleError)
-      );
+    return this.apiService.put<void>(
+      APP_CONSTANTS.API_ENDPOINTS.AUTH.PASSWORD_CHANGE,
+      changeData,
+      { id }
+    ).pipe(
+      map(() => void 0),
+      catchError(this.handleError)
+    );
   }
 
   /**
    * Créer un reservataire
-   * Post /auth/reservataire/{id}
+   * POST /api/auth/reservataire/{id}
    * @param id 
    * @param reservataireData 
    * @returns 
    */
   createReservataire(id: string, reservataireData: CreateReservataire): Observable<User> {
-    return this.http.post<User>(`${this.baseUrl}/reservataire/${id}`, reservataireData, this.httpOptions)
-      .pipe(
-        catchError(this.handleError)
-      );
+    return this.apiService.post<User>(
+      APP_CONSTANTS.API_ENDPOINTS.AUTH.RESERVATAIRE,
+      reservataireData,
+      { id }
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 
   /**
    * Déconnexion
-   * Get /auth/logout
+   * GET /api/auth/logout
    * @returns 
    */
   logout(): Observable<void> {
-    return this.http.get<void>(`${this.baseUrl}/api/auth/logout`, this.httpOptions)
-      .pipe(
-        tap(() => this.handleLogout()),
-        map(() => void 0),
-        catchError((error) => {
-          this.handleLogout();
-          return throwError(() => error);
-        })
-      );
+    return this.apiService.get<void>(
+      APP_CONSTANTS.API_ENDPOINTS.AUTH.LOGOUT
+    ).pipe(
+      tap(() => this.handleLogout()),
+      map(() => void 0),
+      catchError((error) => {
+        this.handleLogout();
+        return throwError(() => error);
+      })
+    );
   }
 
   // Gestion de la déconnexion locale
@@ -129,7 +138,7 @@ export class AuthService {
   private handleError = (error: any): Observable<never> => {
     console.error('Auth Service Error:', error);
 
-    if (error.status === 401) {
+    if (error.status === APP_CONSTANTS.HTTP_STATUS.UNAUTHORIZED) {
       this.handleLogout();
     }
 
